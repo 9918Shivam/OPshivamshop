@@ -1,0 +1,117 @@
+ /* :root{--primary:#0069ff;--soft:#f8f9fa}body{font-family:'Poppins',sans-serif} .hero-banner{background:url('https://images.unsplash.com/photo-1528446877003-6f0c7c54f834?auto=format&fit=crop&w=1400&q=60') center/cover no-repeat;min-height:60vh;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.4)} .card-img-top{object-fit:contain;height:180px;background:var(--soft)} .card{transition:transform .2s}.card:hover{transform:translateY(-4px)}#categoryNav a{white-space:nowrap} */
+
+:root {
+  --primary: #007bff;
+  --secondary: #6610f2;
+  --soft: #f9f9f9;
+  --gradient: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f1f4fa;
+  color: #333;
+}
+
+/* Navbar Styling */
+.navbar {
+  background: var(--gradient) !important;
+}
+.navbar .nav-link, .navbar .navbar-brand {
+  color: #fff !important;
+}
+.navbar .btn-outline-primary {
+  border-color: #fff;
+  color: #fff;
+}
+.navbar .btn-outline-primary:hover {
+  background-color: #fff;
+  color: var(--primary);
+}
+
+/* Hero Banner */
+/* .hero-banner {
+  background: url('https://images.unsplash.com/photo-1528446877003-6f0c7c54f834?auto=format&fit=crop&w=1400&q=60') center/cover no-repeat;
+  min-height: 60vh;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.hero-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+} */
+
+/* Buttons */
+.btn-primary {
+  background: var(--gradient);
+  border: none;
+  transition: 0.3s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.card-img-top {
+  object-fit: cover;
+  height: 180px;
+  background: var(--soft);
+}
+
+.section-title {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Footer */
+footer {
+  background: var(--gradient);
+  color: #fff;
+}
+
+/* Responsive Nav buttons */
+#categoryNav a {
+  white-space: nowrap;
+}
+
+/* Modal improvements */
+.modal-content {
+  border-radius: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Scrollbar styling for category nav */
+#categoryNav::-webkit-scrollbar {
+  height: 6px;
+}
+#categoryNav::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+} 
+
+
+
+
+
+
+
+

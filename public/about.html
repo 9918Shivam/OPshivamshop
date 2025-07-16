@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About Us | OP Electronics</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body {
+        background-color: #f0f4f8;
+    }
+
+    .carousel-item img {
+      height: 600px;
+      width: 100vw; 
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    .carousel-inner img {
+  width: 100%;
+  height: 600px;
+  max-height: 650px; /* or 300px for mobile */
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .carousel-inner img {
+    max-height: 550px; /* smaller height for phones */
+  }
+}
+
+
+
+
+    .about-section {
+      background-color:#d0e7fc ;
+      padding: 40px 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .feature-box {
+    border: 2px solid rgb(118, 197, 231);
+    padding: 20px;
+    /* background-color: #ffffff; */
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    height: 100%;
+  }
+  .feature-box img {
+    width: 250px;
+    height: 250px;
+    object-fit: contain;
+    margin-bottom: 5px;
+  }
+
+  .new-feature-section {
+  background-color: #d0e7fc;
+  padding: 60px 20px;
+  border-radius: 10px;
+}
+html {
+  scroll-behavior: smooth;
+}
+
+#contact input, #contact textarea {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+#contact .btn-primary {
+  background-color: #007bff;
+  border: none;
+}
+#contact .btn-primary:hover {
+  background-color: #0056b3;
+}
+
+    
+  </style>
+</head>
+<body>
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+  <div class="container-fluid">
+    <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 link-body-emphasis text-decoration-none">
+        <img class="bi me-2" width="40" height="32"  src="OP_logo1.png" alt="img-258">
+      </a>
+    <a class="navbar-brand fw-bold text-primary" href="index.html">OP<span class="text-dark">Electronics</span></a>
+    <a class="btn btn-sm btn-outline-primary " href="about.html">About Us</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <form class="d-flex ms-auto me-3"><input class="form-control me-2 rounded-pill px-3" id="searchInput" type="search" placeholder="Search products..."></form>
+      <ul class="navbar-nav mb-2 mb-lg-0 align-items-lg-center gap-lg-2">
+        <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal" id="loginBtn">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#signupModal" id="signupBtn">Sign‑up</a></li>
+        <li class="nav-item"><a class="nav-link d-none" href="#" id="logoutBtn">Logout</a></li>
+        <li class="nav-item"><a class="btn btn-sm btn-outline-primary rounded-pill" href="admin.html">Admin</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Carousel -->
+ <div class="w-100 my-4">
+<div id="carouselExample" class="carousel slide mt-4" data-bs-ride="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="IMG\total1.png" class="d-block w-100" alt="Electronics 1">
+    </div>
+    <div class="carousel-item">
+      <img src="IMG\total2.png" class="d-block w-100" alt="Electronics 3">
+    </div>
+    <div class="carousel-item">
+      <img src="IMG\total6.png" class="d-block w-100" alt="Electronics 2">
+    </div>
+    <div class="carousel-item">
+      <img src="IMG\total8.png" class="d-block w-100" alt="Electronics 3">
+    </div>
+    <div class="carousel-item">
+      <img src="IMG\total9.png" class="d-block w-100" alt="Electronics 3">
+    </div>
+    <div class="carousel-item">
+      <img src="IMG\total7.png" class="d-block w-100" alt="Electronics 3">
+    </div>
+    
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </button>
+</div>
+</div>
+
+<!-- New Side-by-Side Section -->
+<div class="w-100 my-5 new-feature-section">
+  <div class="row align-items-center g-4">
+    <!-- Left Text -->
+    <div class="col-md-6">
+      <h3 class="fw-bold text-primary">We sell electronic items.</h3>
+      <p class="mb-3">OP Electronics offers a wide range of essential home electronics including
+<strong>fridges</strong>, <strong>coolers</strong>, <strong>washing machines</strong>, <strong>TVs</strong>, <strong>LED lights</strong>, <strong>mixer grinders</strong>, <strong>electric irons</strong>,
+ and <strong>smart watches</strong> — all at affordable prices.</p>
+      <a href="#work" class="btn btn-dark">
+        <i class="fa fa-th me-2"></i> View Our Products
+      </a>
+    </div>
+
+    <!-- Right Image -->
+    <div class="col-md-6">
+      <img src="IMG\total1.png" alt="Buildings" class="img-fluid rounded-3 shadow-sm">
+    </div>
+  </div>
+</div>
+
+
+
+<!-- About Us Section -->
+<div class="w-100 my-5">
+  <div class="about-section text-center">
+    <h2 class="mb-3 text-primary fw-bold">About OP Electronics</h2>
+    <p class="lead">
+      OP Electronics is your trusted neighborhood shop for the latest in electronics — from smartphones and Smart watches to fridges, coolers, and home appliances.
+    </p>
+    <p>
+      We offer a wide range of high-quality products with affordable pricing, and a customer-first approach. Whether you're looking for the latest mobile phone, a smart TV, or reliable home gadgets, we've got you covered.
+    </p>
+    <p>
+      Thank you for choosing OP Electronics. Your trust and satisfaction drive everything we do.
+    </p>
+  </div>
+</div>
+
+
+
+
+<div id="work" class=" work row align-items-stretch">
+  <div class="col-md-6">
+    <div class="feature-box text-center h-100">
+      <img src="IMG\ffridge2.webp" alt="Cooler">
+      <h4 class="mt-3">Fridges</h4>
+      <!-- <p>Wherever you travel our car rental is included.</p> -->
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="feature-box text-center h-100">
+      <img src="IMG/plastic-air-cooler-500x500.webp" alt="Air Cooler">
+      <h4 class="mt-3">Coolers</h4>
+      <!-- <p>Don't wait until it is too late.</p> -->
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="feature-box text-center h-100">
+      <img src="IMG\TV1.webp" alt="Air Cooler">
+      <h4 class="mt-3">Smart TVs</h4>
+      <!-- <p>Don't wait until it is too late.</p> -->
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="feature-box text-center h-100">
+      <img src="IMG\dth2.webp" alt="Air Cooler">
+      <h4 class="mt-3">DTH receiver and Antenna</h4>
+      <!-- <p>Don't wait until it is too late.</p> -->
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="feature-box text-center h-100">
+      <img src="IMG\phone2.webp" alt="Air Cooler">
+      <h4 class="mt-3">Touch and Keypad Phones</h4>
+      <!-- <p>Don't wait until it is too late.</p> -->
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="feature-box text-center h-100">
+      <img src="IMG\watches.webp" alt="Air Cooler">
+      <h4 class="mt-3">Smart Wathches</h4>
+      <!-- <p>Don't wait until it is too late.</p> -->
+    </div>
+  </div>
+</div>
+
+<!-- Contact Section -->
+<div class="container my-5" id="contact">
+
+  <div class="row justify-content-center mb-4">
+    <div class="col-lg-8">
+      <div class="text-center">
+        <h3 class="text-primary fw-bold mb-4">Contact Us</h3>
+        <p><i class="fas fa-map-marker-alt me-2 text-danger"></i><strong>Location:</strong> OP Electronics, Main Market, Sikandarpur, Ambedkar Nager, India</p>
+        <p><i class="fas fa-envelope me-2 text-primary"></i><strong>Email:</strong> opelectronics@example.com</p>
+        <p><i class="fas fa-phone me-2 text-success"></i><strong>Phone:</strong> +91-9918803507</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="p-4 shadow rounded" style="background-color: #f8f9fa;">
+        <h3 class="text-center mb-4 text-primary">Contact Us</h3>
+        <form action="https://formspree.io/f/mblkjpjk" method="POST">
+  <div class="mb-3">
+    <label for="contactName" class="form-label">Your Name</label>
+    <input type="text" class="form-control" name="name" id="contactName" required>
+  </div>
+  <div class="mb-3">
+    <label for="contactEmail" class="form-label">Email address</label>
+    <input type="email" class="form-control" name="email" id="contactEmail" required>
+  </div>
+  <div class="mb-3">
+    <label for="contactMessage" class="form-label">Your Message</label>
+    <textarea class="form-control" name="message" id="contactMessage" rows="4" required></textarea>
+  </div>
+  <div class="text-center">
+    <button type="submit" class="btn btn-primary px-4">Send Message</button>
+  </div>
+</form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- Developer Ad / Hire Me Section -->
+<div class="w-100 my-5">
+  <div class="p-4 rounded shadow-sm text-center" style="background-color: #fff3cd;">
+    <h4 class="fw-bold text-primary">Need a Website for Your Business?</h4>
+    <p class="mb-3">I’m a passionate web developer and can build fast, mobile-friendly, and modern websites like this one. Let’s bring your idea online!</p>
+    <p class="mb-2">
+      <i class="fas fa-envelope me-2 text-primary"></i>
+      <strong>Email:</strong> Chaurasiyaomshivam@gmail.com
+    </p>
+    <p class="mb-3">
+      <i class="fas fa-phone me-2 text-success"></i>
+      <strong>Call / WhatsApp:</strong> +91-9839296407
+    </p>
+    <a href="#contact" class="btn btn-primary px-4">Contact Me</a>
+  </div>
+</div>
+
+
+
+
+
+<!-- Footer -->
+<footer class="text-center text-muted py-3 border-top">
+  &copy; 2025 OP Electronics. All rights reserved.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
