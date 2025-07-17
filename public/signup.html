@@ -41,12 +41,12 @@ document.getElementById('signupForm').addEventListener('submit', async e => {
   const password = document.getElementById('signupPassword').value;
 
   try {
-    const res = await fetch('http://localhost:5000/signup', {
+    const res = await fetch('/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password })
     });
-
+//fetch('http://localhost:5000/signup'
     const data = await res.json();
     if (res.ok) {
       alert(data.message); // e.g. Signup successful
