@@ -108,44 +108,81 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const LS_PRODUCTS = 'ope_products';
-    const getLS = k => JSON.parse(localStorage.getItem(k) || '[]');
-    const setLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
-    let editIdx = null;
+    // const LS_PRODUCTS = 'ope_products';
+    // const getLS = k => JSON.parse(localStorage.getItem(k) || '[]');
+    // const setLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+    // let editIdx = null;
 
 
 
-    function renderList() {
+    async function renderList() {
   const list = document.getElementById('productList');
   list.innerHTML = '';
-  getLS(LS_PRODUCTS).forEach((p, i) => {
-    const img = p.images ? p.images[p.primary || 0] : p.image;
-    const li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-start';
 
-    const priceText = p.price ? ` <span class="text-muted">(₹${p.price})</span>` : '';
+  try {
+    const res = await fetch('/products');
+    const products = await res.json();
 
-    li.innerHTML = `
-      <div>
-        <img src="${img}" style="height:30px;width:30px;object-fit:cover;margin-right:8px;">
-        <strong>${p.name}</strong>${priceText}
-        <br><small>${p.category}</small>
-      </div>
-      <div>
-        <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
-        <button class='btn btn-sm btn-outline-danger delBtn'>Del</button>
-      </div>`;
+    products.forEach((p, i) => {
+      const img = p.images ? p.images[p.primary || 0] : p.image;
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-start';
 
-    li.querySelector('.editBtn').onclick = () => fillForm(p, i);
-    li.querySelector('.delBtn').onclick = () => {
-      const arr = getLS(LS_PRODUCTS);
-      arr.splice(i, 1);
-      setLS(LS_PRODUCTS, arr);
-      renderList();
-    };
-    list.appendChild(li);
-  });
+      const priceText = p.price ? ` <span class="text-muted">(₹${p.price})</span>` : '';
+
+      li.innerHTML = `
+        <div>
+          <img src="${img}" style="height:30px;width:30px;object-fit:cover;margin-right:8px;">
+          <strong>${p.name}</strong>${priceText}
+          <br><small>${p.category}</small>
+        </div>
+        <div>
+          <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
+          <!-- No delete for now -->
+        </div>`;
+
+      li.querySelector('.editBtn').onclick = () => fillForm(p, i);
+      list.appendChild(li);
+    });
+  } catch (err) {
+    console.error('Failed to fetch product list:', err);
+    list.innerHTML = '<li class="text-danger">Failed to load products</li>';
+  }
 }
+
+
+//     function renderList() {         // local storage
+//   const list = document.getElementById('productList');
+//   list.innerHTML = '';
+//   getLS(LS_PRODUCTS).forEach((p, i) => {
+//     const img = p.images ? p.images[p.primary || 0] : p.image;
+//     const li = document.createElement('li');
+//     li.className = 'list-group-item d-flex justify-content-between align-items-start';
+
+//     const priceText = p.price ? ` <span class="text-muted">(₹${p.price})</span>` : '';
+
+//     li.innerHTML = `
+//       <div>
+//         <img src="${img}" style="height:30px;width:30px;object-fit:cover;margin-right:8px;">
+//         <strong>${p.name}</strong>${priceText}
+//         <br><small>${p.category}</small>
+//       </div>
+//       <div>
+//         <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
+//         <button class='btn btn-sm btn-outline-danger delBtn'>Del</button>
+//       </div>`;
+
+//     li.querySelector('.editBtn').onclick = () => fillForm(p, i);
+//     li.querySelector('.delBtn').onclick = () => {
+//       const arr = getLS(LS_PRODUCTS); // local storage
+//       arr.splice(i, 1);
+//       setLS(LS_PRODUCTS, arr);
+
+//       renderList();
+//     };
+//     list.appendChild(li);
+//   });
+// }
 
 
 
@@ -165,6 +202,7 @@
   if ([...catSelect.options].some(opt => opt.value === p.category)) {
     catSelect.value = p.category;
   } else {
+
     // If category is new, add it to dropdown and select
     const opt = document.createElement('option');
     opt.value = p.category;
@@ -181,26 +219,53 @@ document.getElementById('showPriceChk').checked = !!p.showPrice;
 }
 
 
-    function updateCategoryDropdown() {
+
+async function updateCategoryDropdown() {
   const sel = document.getElementById('prodCatSelect');
-  const usedCats = [...new Set(getLS('ope_products').map(p => p.category).filter(Boolean))];
+  try {
+    const res = await fetch('/products');
+    const products = await res.json();
+    const usedCats = [...new Set(products.map(p => p.category).filter(Boolean))];
 
-  sel.innerHTML = '';
+    sel.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.textContent = '-- Select a category --';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    sel.appendChild(placeholder);
 
-  // Add the placeholder option
-  const placeholder = document.createElement('option');
-  placeholder.textContent = '-- Select a category --';
-  placeholder.disabled = true;
-  placeholder.selected = true;
-  sel.appendChild(placeholder);
-
-  usedCats.forEach(cat => {
-    const opt = document.createElement('option');
-    opt.value = cat;
-    opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
-    sel.appendChild(opt);
-  });
+    usedCats.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+      sel.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('Failed to fetch categories', err);
+  }
 }
+
+
+//     function updateCategoryDropdown() {   // local storage
+//   const sel = document.getElementById('prodCatSelect');
+//   const usedCats = [...new Set(getLS('ope_products').map(p => p.category).filter(Boolean))];
+
+//   sel.innerHTML = '';
+
+//   // Add the placeholder option
+//   const placeholder = document.createElement('option');
+//   placeholder.textContent = '-- Select a category --';
+//   placeholder.disabled = true;
+//   placeholder.selected = true;
+//   sel.appendChild(placeholder);
+
+//   usedCats.forEach(cat => {
+//     const opt = document.createElement('option');
+//     opt.value = cat;
+//     opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+//     sel.appendChild(opt);
+//   });
+// }
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -263,11 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // };
 
 
-
-    
-
-
-  addProdBtn.onclick = () => {
+addProdBtn.onclick = async () => {
   const imgs = [];
   for (let k = 1; k <= 5; k++) {
     const val = document.getElementById('prodImg' + k).value.trim();
@@ -277,7 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const category = prodCatNew.value.trim() || prodCatSelect.value.trim();
   const item = {
-    id: Date.now(),
     name: prodName.value.trim(),
     price: prodPrice.value.trim() || '',
     showPrice: document.getElementById('showPriceChk').checked,
@@ -289,23 +349,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!item.name || !item.category) return alert('Name and category are required');
 
-  const arr = getLS(LS_PRODUCTS);
-  if (editIdx !== null) {
-    arr[editIdx] = item;
-    editIdx = null;
-  } else {
-    arr.push(item);
+  try {
+    const res = await fetch('/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(item)
+    });
+    const data = await res.json();
+    alert(data.message);
+    location.reload(); // optional reload
+  } catch (err) {
+    alert('Failed to save product');
+    console.error(err);
   }
-
-  setLS(LS_PRODUCTS, arr);
-  renderList();
-  updateCategoryDropdown();
-  document.querySelectorAll('#formSection input, #formSection textarea').forEach(el => el.value = '');
-  prodPrimary.value = 0;
-
-  // 🔄 Optional full refresh:
-   setTimeout(() => location.reload(), 300);
 };
+
+    
+
+
+//   addProdBtn.onclick = () => {      // local storage
+//   const imgs = [];
+//   for (let k = 1; k <= 5; k++) {
+//     const val = document.getElementById('prodImg' + k).value.trim();
+//     if (val) imgs.push(val);
+//   }
+//   if (!imgs.length) return alert('At least one image is required');
+
+//   const category = prodCatNew.value.trim() || prodCatSelect.value.trim();
+//   const item = {
+//     id: Date.now(),
+//     name: prodName.value.trim(),
+//     price: prodPrice.value.trim() || '',
+//     showPrice: document.getElementById('showPriceChk').checked,
+//     category,
+//     features: prodFeatures.value.trim(),
+//     images: imgs,
+//     primary: parseInt(prodPrimary.value) || 0
+//   };
+
+//   if (!item.name || !item.category) return alert('Name and category are required');
+
+//   const arr = getLS(LS_PRODUCTS);
+//   if (editIdx !== null) {
+//     arr[editIdx] = item;
+//     editIdx = null;
+//   } else {
+//     arr.push(item);
+//   }
+
+//   setLS(LS_PRODUCTS, arr);
+//   renderList();
+//   updateCategoryDropdown();
+//   document.querySelectorAll('#formSection input, #formSection textarea').forEach(el => el.value = '');
+//   prodPrimary.value = 0;
+
+//   // 🔄 Optional full refresh:
+//    setTimeout(() => location.reload(), 300);
+// };
 
 window.addEventListener('DOMContentLoaded', () => {
       if (localStorage.getItem('ope_admin_logged_in') === 'true') {

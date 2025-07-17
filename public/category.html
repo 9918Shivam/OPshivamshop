@@ -24,13 +24,18 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded',()=>{
-      const params=new URLSearchParams(window.location.search);
-      const cat=params.get('cat')||'';
-      catTitle.textContent=cat.replace(/-/g,' ');
-      const prods=getLS(LS_PRODUCTS).filter(p=>p.category&&p.category.toLowerCase()===cat.toLowerCase());
-      renderProducts(prods);
-      if(!prods.length)productGrid.innerHTML='<p class="text-muted">Nothing here yet.</p>';
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get('cat') || '';
+      catTitle.textContent = cat.replace(/-/g, ' ');
+
+      fetch('/products')
+        .then(res => res.json())
+        .then(data => {
+          const filtered = data.filter(p => p.category && p.category.toLowerCase() === cat.toLowerCase());
+          renderProducts(filtered);
+          if (!filtered.length) productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
+        });
     });
   </script>
 </body>

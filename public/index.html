@@ -108,7 +108,7 @@
 <script src="script.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const user = localStorage.getItem('ope_user_email');
+  const user = JSON.parse(localStorage.getItem('ope_current_user') || 'null');
   const userDisplay = document.getElementById('userDisplay');
   const loginBtn = document.getElementById('loginBtn');
   const signupBtn = document.getElementById('signupBtn');
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (user) {
     // Show user info
     userDisplay.classList.remove('d-none');
-    userDisplay.querySelector('span').textContent = `👋 Welcome, ${user}`;
+    userDisplay.querySelector('span').textContent = `👋 Welcome, ${user.name || user.email}`;
 
     // Hide login/signup
     if (loginBtn) loginBtn.classList.add('d-none');
@@ -132,44 +132,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     logout.addEventListener('click', () => {
-      localStorage.removeItem('ope_user_email');
+      localStorage.removeItem('ope_current_user');
       location.reload(); // Reload to reflect logged out state
     });
   }
 });
 
 function updateNavbar() {
-    const userEmail = localStorage.getItem('ope_user_email');
-    const loginBtn = document.getElementById('loginBtn');
-    const signupBtn = document.getElementById('signupBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const userDisplay = document.getElementById('userDisplay');
+  const user = JSON.parse(localStorage.getItem('ope_current_user') || 'null');
+  const loginBtn = document.getElementById('loginBtn');
+  const signupBtn = document.getElementById('signupBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const userDisplay = document.getElementById('userDisplay');
 
-    if (userEmail) {
-      if (loginBtn) loginBtn.classList.add('d-none');
-      if (signupBtn) signupBtn.classList.add('d-none');
-      if (logoutBtn) logoutBtn.classList.remove('d-none');
-      if (userDisplay) {
-        userDisplay.classList.remove('d-none');
-        userDisplay.querySelector('span').textContent = userEmail;
-      }
-    } else {
-      if (loginBtn) loginBtn.classList.remove('d-none');
-      if (signupBtn) signupBtn.classList.remove('d-none');
-      if (logoutBtn) logoutBtn.classList.add('d-none');
-      if (userDisplay) {
-        userDisplay.classList.add('d-none');
-        userDisplay.querySelector('span').textContent = '';
-      }
+  if (user) {
+    if (loginBtn) loginBtn.classList.add('d-none');
+    if (signupBtn) signupBtn.classList.add('d-none');
+    if (logoutBtn) logoutBtn.classList.remove('d-none');
+    if (userDisplay) {
+      userDisplay.classList.remove('d-none');
+      userDisplay.querySelector('span').textContent = `👋 Welcome, ${user.name || user.email}`;
+    }
+  } else {
+    if (loginBtn) loginBtn.classList.remove('d-none');
+    if (signupBtn) signupBtn.classList.remove('d-none');
+    if (logoutBtn) logoutBtn.classList.add('d-none');
+    if (userDisplay) {
+      userDisplay.classList.add('d-none');
+      userDisplay.querySelector('span').textContent = '';
     }
   }
+}
 
-  function logout() {
-    localStorage.removeItem('ope_user_email');
-    updateNavbar();
-  }
+function logout() {
+  localStorage.removeItem('ope_current_user');
+  updateNavbar();
+}
 
-  document.addEventListener('DOMContentLoaded', updateNavbar);
+document.addEventListener('DOMContentLoaded', updateNavbar);
+
 </script>
 
 </body>

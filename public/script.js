@@ -6,19 +6,27 @@ const LS_PRODUCTS = 'ope_products',
       LS_USERS = 'ope_users',
       LS_CURRENT_USER = 'ope_current_user';
 
+      
+let products = [];
+
+
 const getLS = key => JSON.parse(localStorage.getItem(key) || '[]');
 const setLS = (key, val) => localStorage.setItem(key, JSON.stringify(val));
 
 function getPrimaryImage(p) {
+  const fallback = 'https://via.placeholder.com/300x200?text=No+Image';
   if (p.images && p.images.length) {
     const idx = typeof p.primary === 'number' && p.primary < p.images.length ? p.primary : 0;
-    return p.images[idx];
+    return p.images[idx] || fallback;
   }
-  return p.image || 'https://via.placeholder.com/300x200?text=No+Image';
+  return p.image || fallback;
 }
 
+
 function refreshAuth() {
-  const user = localStorage.getItem('ope_current_user');
+  //const user = localStorage.getItem('ope_current_user');
+  const user = JSON.parse(localStorage.getItem('ope_current_user') || 'null');
+
   document.getElementById('loginBtn')?.classList.toggle('d-none', !!user);
   document.getElementById('signupBtn')?.classList.toggle('d-none', !!user);
   document.getElementById('logoutBtn')?.classList.toggle('d-none', !user);
@@ -65,18 +73,19 @@ function renderProducts(list, id = 'productGrid') {
         </div>
       </div>`;
     col.querySelector('.card').onclick = () => {
-      location.href = 'product.html?id=' + p.id;
+      location.href = 'product.html?id=' + (p._id || p.id);
+
     };
     grid.appendChild(col);
   });
 }
 
-function renderShopCats() {
+// for online product display
+function renderShopCats(products) {
   const cont = document.getElementById('shopCategoryGrid');
   if (!cont) return;
   cont.innerHTML = '';
-  const prods = getLS(LS_PRODUCTS);
-  const uniq = new Map(prods.filter(p => p.category).map(p => [p.category, p]));
+  const uniq = new Map(products.filter(p => p.category).map(p => [p.category, p]));
   if (!uniq.size) {
     cont.innerHTML = '<p class="text-muted">No categories.</p>';
     return;
@@ -97,28 +106,84 @@ function renderShopCats() {
   });
 }
 
-function renderCategoryNav() {
+// for local storage product display
+// function renderShopCats() {
+//   const cont = document.getElementById('shopCategoryGrid');
+//   if (!cont) return;
+//   cont.innerHTML = '';
+//   const prods = getLS(LS_PRODUCTS);
+//   const uniq = new Map(prods.filter(p => p.category).map(p => [p.category, p]));
+//   if (!uniq.size) {
+//     cont.innerHTML = '<p class="text-muted">No categories.</p>';
+//     return;
+//   }
+//   uniq.forEach((p, cat) => {
+//     const col = document.createElement('div');
+//     col.className = 'col-6 col-md-3';
+//     col.innerHTML = `
+//       <a href="category.html?cat=${encodeURIComponent(cat)}" class="text-decoration-none">
+//         <div class="card h-100 shadow-sm text-center">
+//           <img src="${getPrimaryImage(p)}" class="card-img-top">
+//           <div class="card-body">
+//             <h6 class="fw-bold text-capitalize">${cat}</h6>
+//           </div>
+//         </div>
+//       </a>`;
+//     cont.appendChild(col);
+//   });
+// }
+
+
+
+// for online product display
+function renderCategoryNav(products) {
   const nav = document.getElementById('categoryNav');
   if (!nav) return;
-  const prods = getLS(LS_PRODUCTS);
-  const cats = [...new Set(prods.map(p => p.category))];
-  if (!cats.length) return (nav.innerHTML = '<span class="text-muted">No categories</span>');
-
-  nav.innerHTML = cats
-    .map(
-      c =>
-        `<a href="category.html?cat=${encodeURIComponent(
-          c
-        )}" class="btn btn-sm btn-outline-primary rounded-pill text-capitalize">${c}</a>`
-    )
-    .join('');
+  const cats = [...new Set(products.map(p => p.category))];
+  if (!cats.length) {
+    nav.innerHTML = '<span class="text-muted">No categories</span>';
+    return;
+  }
+  nav.innerHTML = cats.map(c => 
+    `<a href="category.html?cat=${encodeURIComponent(c)}" class="btn btn-sm btn-outline-primary rounded-pill text-capitalize">${c}</a>`
+  ).join('');
 }
 
+
+
+
+// for local storage display
+// function renderCategoryNav() {
+//   const nav = document.getElementById('categoryNav');
+//   if (!nav) return;
+//   const prods = getLS(LS_PRODUCTS);
+//   const cats = [...new Set(prods.map(p => p.category))];
+//   if (!cats.length) return (nav.innerHTML = '<span class="text-muted">No categories</span>');
+
+//   nav.innerHTML = cats
+//     .map(
+//       c =>
+//         `<a href="category.html?cat=${encodeURIComponent(
+//           c
+//         )}" class="btn btn-sm btn-outline-primary rounded-pill text-capitalize">${c}</a>`
+//     )
+//     .join('');
+// }
+
 document.addEventListener('DOMContentLoaded', () => {
-  const products = getLS(LS_PRODUCTS);
-  renderProducts(products);
-  renderShopCats();
-  renderCategoryNav();
+  // const products = getLS(LS_PRODUCTS); // for local storage
+  // renderProducts(products);
+  // renderShopCats();
+  // renderCategoryNav();
+  
+  fetch('/products')     // for online storage
+  .then(res => res.json())
+  .then(data => {
+    products = data; // ✅ store globally
+    renderProducts(products);
+    renderShopCats(products);
+    renderCategoryNav(products);
+  });
   refreshAuth();
 
   const search = document.getElementById('searchInput');

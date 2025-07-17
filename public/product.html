@@ -11,17 +11,47 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="script.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded',()=>{
- const params=new URLSearchParams(location.search);const id=parseInt(params.get('id'));
- const p=getLS('ope_products').find(x=>x.id===id);
- if(!p){detail.innerHTML='<p class="text-center">Product not found</p>';return;}
- const images=p.images||[p.image];const main=images[p.primary||0];
- detail.innerHTML=`<div class='row g-4'><div class='col-md-6'><img id='mainImg' src='${main}' class='img-fluid rounded mb-3'>
- <div>${images.map((src,i)=>`<img src='${src}' onclick='document.getElementById("mainImg").src="${src}"' style='height:70px;width:70px;object-fit:cover;cursor:pointer;margin:3px;border:${i===p.primary?'2px solid #007bff':'1px solid #ccc'}'>`).join('')}</div></div>
- <div class='col-md-6'>
-    <h2>${p.name}</h2>
-    ${(p.price && p.showPrice) ? `<h4 class='text-primary mb-3'>₹${p.price}</h4>` : ''}
-    <p>${p.features||''}</p><p><strong>Category:</strong> ${p.category}</p></div></div>`;
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+
+  fetch('/products') // optionally replace with `/products/${id}` later
+    .then(res => res.json())
+    .then(allProducts => {
+      const p = allProducts.find(prod => (prod._id || prod.id) === id);
+      if (!p) {
+        detail.innerHTML = '<p class="text-center">Product not found</p>';
+        return;
+      }
+
+      const images = p.images || [p.image];
+      const main = images[p.primary || 0];
+
+      detail.innerHTML = `
+        <div class='row g-4'>
+          <div class='col-md-6'>
+            <img id='mainImg' src='${main}' class='img-fluid rounded mb-3'>
+            <div>
+              ${images.map((src, i) => `
+                <img src='${src}' onclick='document.getElementById("mainImg").src="${src}"'
+                     style='height:70px;width:70px;object-fit:cover;cursor:pointer;margin:3px;
+                            border:${i === p.primary ? '2px solid #007bff' : '1px solid #ccc'}'>`
+              ).join('')}
+            </div>
+          </div>
+          <div class='col-md-6'>
+            <h2>${p.name}</h2>
+            ${(p.price && p.showPrice) ? `<h4 class='text-primary mb-3'>₹${p.price}</h4>` : ''}
+            <p>${p.features || ''}</p>
+            <p><strong>Category:</strong> ${p.category}</p>
+          </div>
+        </div>
+      `;
+    })
+    .catch(() => {
+      detail.innerHTML = '<p class="text-center text-danger">Error loading product</p>';
+    });
 });
 </script>
+
 </body></html>

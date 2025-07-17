@@ -24,6 +24,18 @@ const userSchema = new mongoose.Schema({
   password: String
 });
 
+const productSchema = new mongoose.Schema({
+  name: String,
+  price: String,
+  showPrice: Boolean,
+  category: String,
+  features: String,
+  images: [String],
+  primary: Number
+});
+const Product = mongoose.model('Product', productSchema);
+
+
 const User = mongoose.model('User', userSchema);
 
 // Signup Route
@@ -49,6 +61,51 @@ app.post('/login', async (req, res) => {
 
   res.json({ message: 'Login successful', name: user.name, email: user.email });
 });
+
+// Add a new product
+app.post('/products', async (req, res) => {
+  try {
+    const product = new Product(req.body);
+    await product.save();
+    res.json({ message: 'Product saved successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error saving product' });
+  }
+});
+
+// Get all products
+app.get('/products', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching products' });
+  }
+});
+
+
+// Update a product by ID
+app.put('/products/:id', async (req, res) => {
+  try {
+    await Product.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ message: 'Product updated' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating product' });
+  }
+});
+
+// Delete a product by ID
+app.delete('/products/:id', async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Product deleted' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting product' });
+  }
+});
+
+
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, 'public')));
