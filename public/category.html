@@ -23,7 +23,7 @@
 <script>
   function renderProducts(products) {
     const productGrid = document.getElementById('productGrid');
-    productGrid.innerHTML = ''; // Clear previous content
+    productGrid.innerHTML = '';
 
     if (!products.length) {
       productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
@@ -58,7 +58,7 @@
     const catTitle = document.getElementById('catTitle');
     const productGrid = document.getElementById('productGrid');
 
-    catTitle.textContent = cat.replace(/-/g, ' '); // Format title
+    catTitle.textContent = cat.replace(/-/g, ' ');
 
     fetch('/products')
       .then(res => res.json())
@@ -67,7 +67,7 @@
           p.category && p.category.toLowerCase() === cat.toLowerCase()
         );
 
-        renderProducts(filtered); // ✅ ONLY render filtered products
+        renderProducts(filtered);
       })
       .catch(err => {
         console.error('Error loading products:', err);
@@ -76,39 +76,6 @@
   });
 </script>
 
-
-
-  
-  <!-- <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const cat = params.get('cat') || '';
-    const catTitle = document.getElementById('catTitle');
-    const productGrid = document.getElementById('productGrid');
-
-    // Set title and clear product grid early
-    catTitle.textContent = cat.replace(/-/g, ' ');
-    productGrid.innerHTML = ''; // Clear everything before fetch
-
-    fetch('/products')
-      .then(res => res.json())
-      .then(products => {
-        const filtered = products.filter(p =>
-          p.category && p.category.toLowerCase() === cat.toLowerCase()
-        );
-
-        if (filtered.length === 0) {
-          productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
-        } else {
-          renderProducts(filtered); // This should populate productGrid
-        }
-      })
-      .catch(err => {
-        console.error('Error loading products:', err);
-        productGrid.innerHTML = '<p class="text-danger">Failed to load products.</p>';
-      });
-  });
-</script> -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>
