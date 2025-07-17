@@ -41,7 +41,7 @@ document.getElementById('signupForm').addEventListener('submit', async e => {
   const password = document.getElementById('signupPassword').value;
 
   try {
-    const res = await fetch('/signup', {
+    const res = await fetch('https://opelectronicshop.onrender.com/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password })
