@@ -21,10 +21,9 @@
 
   <footer class="bg-dark text-white text-center p-4">© 2025 OP Electronics</footer>
 <script>
-  // Function to render only category-filtered products
   function renderProducts(products) {
     const productGrid = document.getElementById('productGrid');
-    productGrid.innerHTML = ''; // Clear existing content
+    productGrid.innerHTML = ''; // Clear previous content
 
     if (!products.length) {
       productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
@@ -33,7 +32,6 @@
 
     products.forEach(p => {
       const img = (p.images && p.images[p.primary || 0]) || p.image || 'placeholder.jpg';
-
       const card = document.createElement('div');
       card.className = 'col-md-4';
 
@@ -54,14 +52,13 @@
     });
   }
 
-  // Load only category-matching products when page loads
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const cat = params.get('cat') || '';
     const catTitle = document.getElementById('catTitle');
     const productGrid = document.getElementById('productGrid');
 
-    catTitle.textContent = cat.replace(/-/g, ' '); // Beautify title
+    catTitle.textContent = cat.replace(/-/g, ' '); // Format title
 
     fetch('/products')
       .then(res => res.json())
@@ -70,14 +67,15 @@
           p.category && p.category.toLowerCase() === cat.toLowerCase()
         );
 
-        renderProducts(filtered);
+        renderProducts(filtered); // ✅ ONLY render filtered products
       })
       .catch(err => {
-        console.error('Failed to fetch products:', err);
-        productGrid.innerHTML = '<p class="text-danger">Error loading products.</p>';
+        console.error('Error loading products:', err);
+        productGrid.innerHTML = '<p class="text-danger">Failed to load products.</p>';
       });
   });
 </script>
+
 
 
   
