@@ -21,10 +21,10 @@
 
   <footer class="bg-dark text-white text-center p-4">© 2025 OP Electronics</footer>
 <script>
-  // Function to render product cards in the grid
+  // Function to render only category-filtered products
   function renderProducts(products) {
     const productGrid = document.getElementById('productGrid');
-    productGrid.innerHTML = ''; // Clear grid
+    productGrid.innerHTML = ''; // Clear existing content
 
     if (!products.length) {
       productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
@@ -38,33 +38,31 @@
       card.className = 'col-md-4';
 
       card.innerHTML = `
-        <div class="card h-100">
-          <img src="${img}" class="card-img-top" alt="${p.name}">
-          <div class="card-body">
-            <h5 class="card-title">${p.name}</h5>
-            ${p.showPrice && p.price ? `<p class="text-primary">₹${p.price}</p>` : ''}
-            <p class="card-text">${p.features || ''}</p>
+        <a href="product.html?id=${p._id || p.id}" class="text-decoration-none text-dark">
+          <div class="card h-100">
+            <img src="${img}" class="card-img-top" alt="${p.name}">
+            <div class="card-body">
+              <h5 class="card-title">${p.name}</h5>
+              ${p.showPrice && p.price ? `<p class="text-primary">₹${p.price}</p>` : ''}
+              <p class="card-text">${p.features || ''}</p>
+            </div>
           </div>
-        </div>`;
+        </a>
+      `;
 
       productGrid.appendChild(card);
     });
   }
 
-  // Run on page load
+  // Load only category-matching products when page loads
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const cat = params.get('cat') || '';
     const catTitle = document.getElementById('catTitle');
     const productGrid = document.getElementById('productGrid');
 
-    // Set category title
-    catTitle.textContent = cat.replace(/-/g, ' ');
+    catTitle.textContent = cat.replace(/-/g, ' '); // Beautify title
 
-    // Clear grid before loading
-    productGrid.innerHTML = '';
-
-    // Fetch products and filter by category
     fetch('/products')
       .then(res => res.json())
       .then(products => {
@@ -72,18 +70,15 @@
           p.category && p.category.toLowerCase() === cat.toLowerCase()
         );
 
-        if (filtered.length === 0) {
-          productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
-        } else {
-          renderProducts(filtered); // Render filtered products only
-        }
+        renderProducts(filtered);
       })
       .catch(err => {
-        console.error('Error loading products:', err);
-        productGrid.innerHTML = '<p class="text-danger">Failed to load products.</p>';
+        console.error('Failed to fetch products:', err);
+        productGrid.innerHTML = '<p class="text-danger">Error loading products.</p>';
       });
   });
 </script>
+
 
   
   <!-- <script>
