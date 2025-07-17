@@ -138,10 +138,29 @@
         </div>
         <div>
           <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
-          <!-- No delete for now -->
+          <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
         </div>`;
 
       li.querySelector('.editBtn').onclick = () => fillForm(p, i);
+      li.querySelector('.delBtn').onclick = async () => {
+  if (!confirm(`Delete product "${p.name}"?`)) return;
+
+  try {
+    const res = await fetch(`/products/${p._id}`, {
+      method: 'DELETE'
+    });
+    if (res.ok) {
+      alert('Product deleted');
+      renderList();
+    } else {
+      alert('Failed to delete product');
+    }
+  } catch (err) {
+    console.error('Delete error:', err);
+    alert('Error deleting product');
+  }
+};
+
       list.appendChild(li);
     });
   } catch (err) {
@@ -330,10 +349,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 addProdBtn.onclick = async () => {
   const imgs = [];
-  for (let k = 1; k <= 5; k++) {
-    const val = document.getElementById('prodImg' + k).value.trim();
-    if (val) imgs.push(val);
+const seen = new Set();
+for (let k = 1; k <= 5; k++) {
+  const val = document.getElementById('prodImg' + k).value.trim();
+  if (val && !seen.has(val)) {
+    imgs.push(val);
+    seen.add(val);
   }
+}
   if (!imgs.length) return alert('At least one image is required');
 
   const category = prodCatNew.value.trim() || prodCatSelect.value.trim();
