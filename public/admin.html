@@ -112,6 +112,7 @@
     // const getLS = k => JSON.parse(localStorage.getItem(k) || '[]');
     // const setLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
     // let editIdx = null;
+    let editingProductId = null;
 
 
 
@@ -235,6 +236,8 @@ editIdx = i;
 catSelect.style.display = 'block';
 document.getElementById('showPriceChk').checked = !!p.showPrice;
 
+// ✅ Track MongoDB _id for updates
+  editingProductId = p._id;
 }
 
 
@@ -349,16 +352,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 addProdBtn.onclick = async () => {
   const imgs = [];
-const seen = new Set();
-for (let k = 1; k <= 5; k++) {
-  const val = document.getElementById('prodImg' + k).value.trim();
-  if (val && !seen.has(val)) {
-    imgs.push(val);
-    seen.add(val);
+  const seen = new Set();
+  for (let k = 1; k <= 5; k++) {
+    const val = document.getElementById('prodImg' + k).value.trim();
+    if (val && !seen.has(val)) {
+      imgs.push(val);
+      seen.add(val);
+    }
   }
-}if (!imgs.length) return alert('At least one image is required');
+  if (!imgs.length) return alert('At least one image is required');
 
   const category = prodCatNew.value.trim() || prodCatSelect.value.trim();
+  if (!prodName.value.trim() || !category) {
+    return alert('Name and category are required');
+  }
+
   const item = {
     name: prodName.value.trim(),
     price: prodPrice.value.trim() || '',
@@ -369,22 +377,44 @@ for (let k = 1; k <= 5; k++) {
     primary: parseInt(prodPrimary.value) || 0
   };
 
-  if (!item.name || !item.category) return alert('Name and category are required');
-
   try {
-    const res = await fetch('/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item)
-    });
+    let res;
+    if (editingProductId) {
+      // 🟡 Edit existing product
+      res = await fetch(`/products/${editingProductId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      });
+    } else {
+      // 🟢 Add new product
+      res = await fetch('/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      });
+    }
+
     const data = await res.json();
-    alert(data.message);
-    location.reload(); // optional reload
+    if (!res.ok) throw new Error(data.message || 'Error saving product');
+
+    alert(data.message || 'Saved successfully');
+    editingProductId = null;
+    resetForm(); // ✅ Clear the form
+    renderList();
+    updateCategoryDropdown();
   } catch (err) {
     alert('Failed to save product');
     console.error(err);
   }
 };
+
+function resetForm() {
+  document.querySelectorAll('#formSection input, #formSection textarea').forEach(el => el.value = '');
+  prodPrimary.value = 0;
+  editingProductId = null;
+}
+
 
     
 
