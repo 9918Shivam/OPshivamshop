@@ -176,13 +176,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // renderShopCats();
   // renderCategoryNav();
   
-  fetch('/products')     // for online storage
+  // script.js — only fetch + store globally
+fetch('/products')
   .then(res => res.json())
   .then(data => {
-    products = data; // ✅ store globally
-    renderProducts(products);
+    products = data;
     renderShopCats(products);
     renderCategoryNav(products);
+    // DO NOT call renderProducts() here
   });
   refreshAuth();
 
