@@ -30,28 +30,30 @@
     const catTitle = document.getElementById('catTitle');
     const productGrid = document.getElementById('productGrid');
 
-    // Early clear to prevent flash
-    productGrid.innerHTML = '<p class="text-muted">Loading...</p>';
+    // Set title and clear product grid early
     catTitle.textContent = cat.replace(/-/g, ' ');
+    productGrid.innerHTML = ''; // Clear everything before fetch
 
     fetch('/products')
       .then(res => res.json())
-      .then(data => {
-        const filtered = data.filter(p => p.category && p.category.toLowerCase() === cat.toLowerCase());
-        
-        // Now render only filtered results
-        renderProducts(filtered);
+      .then(products => {
+        const filtered = products.filter(p =>
+          p.category && p.category.toLowerCase() === cat.toLowerCase()
+        );
 
-        if (!filtered.length) {
+        if (filtered.length === 0) {
           productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
+        } else {
+          renderProducts(filtered); // This should populate productGrid
         }
       })
       .catch(err => {
-        console.error('Failed to load products:', err);
+        console.error('Error loading products:', err);
         productGrid.innerHTML = '<p class="text-danger">Failed to load products.</p>';
       });
   });
 </script>
+
 
 </body>
 </html>
