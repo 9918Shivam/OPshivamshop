@@ -116,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (user) {
     userDisplay.classList.remove('d-none');
     userDisplay.querySelector('span').textContent = `👋 Welcome, ${user.name || user.email}`;
-
     if (loginBtn) loginBtn.classList.add('d-none');
     if (signupBtn) signupBtn.classList.add('d-none');
 
@@ -134,23 +133,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ✅ Render all products on index page
-  if (typeof products !== 'undefined' && Array.isArray(products)) {
-    renderProducts(products);
-  } else {
-    fetch('/products')
-      .then(res => res.json())
-      .then(data => {
-        renderProducts(data);
-      })
-      .catch(err => {
-        const grid = document.getElementById('productGrid');
-        if (grid) {
-          grid.innerHTML = '<p class="text-danger">Failed to load products.</p>';
-        }
-        console.error('Error loading products:', err);
-      });
-  }
+  // ✅ Wait for products from script.js
+  const checkProductsReady = setInterval(() => {
+    if (typeof products !== 'undefined' && products.length > 0) {
+      clearInterval(checkProductsReady);
+      renderProducts(products);
+    }
+  }, 100);
 });
 
 function updateNavbar() {
@@ -186,6 +175,7 @@ function logout() {
 
 document.addEventListener('DOMContentLoaded', updateNavbar);
 </script>
+
 
 
 </body>
