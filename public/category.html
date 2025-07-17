@@ -20,10 +20,73 @@
   </section>
 
   <footer class="bg-dark text-white text-center p-4">© 2025 OP Electronics</footer>
+<script>
+  // Function to render product cards in the grid
+  function renderProducts(products) {
+    const productGrid = document.getElementById('productGrid');
+    productGrid.innerHTML = ''; // Clear grid
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="script.js"></script>
-  <script>
+    if (!products.length) {
+      productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
+      return;
+    }
+
+    products.forEach(p => {
+      const img = (p.images && p.images[p.primary || 0]) || p.image || 'placeholder.jpg';
+
+      const card = document.createElement('div');
+      card.className = 'col-md-4';
+
+      card.innerHTML = `
+        <div class="card h-100">
+          <img src="${img}" class="card-img-top" alt="${p.name}">
+          <div class="card-body">
+            <h5 class="card-title">${p.name}</h5>
+            ${p.showPrice && p.price ? `<p class="text-primary">₹${p.price}</p>` : ''}
+            <p class="card-text">${p.features || ''}</p>
+          </div>
+        </div>`;
+
+      productGrid.appendChild(card);
+    });
+  }
+
+  // Run on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat') || '';
+    const catTitle = document.getElementById('catTitle');
+    const productGrid = document.getElementById('productGrid');
+
+    // Set category title
+    catTitle.textContent = cat.replace(/-/g, ' ');
+
+    // Clear grid before loading
+    productGrid.innerHTML = '';
+
+    // Fetch products and filter by category
+    fetch('/products')
+      .then(res => res.json())
+      .then(products => {
+        const filtered = products.filter(p =>
+          p.category && p.category.toLowerCase() === cat.toLowerCase()
+        );
+
+        if (filtered.length === 0) {
+          productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
+        } else {
+          renderProducts(filtered); // Render filtered products only
+        }
+      })
+      .catch(err => {
+        console.error('Error loading products:', err);
+        productGrid.innerHTML = '<p class="text-danger">Failed to load products.</p>';
+      });
+  });
+</script>
+
+  
+  <!-- <script>
   document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const cat = params.get('cat') || '';
@@ -52,8 +115,9 @@
         productGrid.innerHTML = '<p class="text-danger">Failed to load products.</p>';
       });
   });
-</script>
+</script> -->
 
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
