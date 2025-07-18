@@ -9,50 +9,50 @@
     <link href="style.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <style>
-    body {
-        background-color: #f0f4f8;
-    }
-
-    .carousel-item img {
-      height: 600px;
-      width: 100vw; 
-      object-fit: cover;
-      border-radius: 10px;
-    }
-
-    .carousel-inner img {
-  width: 100%;
-  height: 600px;
-  max-height: 650px; /* or 300px for mobile */
-  object-fit: cover;
-}
-
-@media (max-width: 768px) {
-  .carousel-inner img {
-    max-height: 550px; /* smaller height for phones */
+  <<style>
+  body {
+    background-color: #f0f4f8;
   }
-}
 
+  /* ✅ Carousel Image Styles */
+  .carousel-item img,
+  .carousel-inner img {
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: contain; /* show full image */
+    border-radius: 10px;
+  }
 
-
-
-    .about-section {
-      background-color:#d0e7fc ;
-      padding: 40px 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  /* ✅ Responsive adjustments for mobile */
+  @media (max-width: 768px) {
+    .carousel-item img,
+    .carousel-inner img {
+      max-height: 300px; /* reduced height on phones */
     }
 
-    .feature-box {
+    .carousel {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .about-section {
+    background-color: #d0e7fc;
+    padding: 40px 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .feature-box {
     border: 2px solid rgb(118, 197, 231);
     padding: 20px;
-    /* background-color: #ffffff; */
     background-color: #f9f9f9;
     border-radius: 10px;
     margin-bottom: 20px;
     height: 100%;
   }
+
   .feature-box img {
     width: 250px;
     height: 250px;
@@ -61,28 +61,31 @@
   }
 
   .new-feature-section {
-  background-color: #d0e7fc;
-  padding: 60px 20px;
-  border-radius: 10px;
-}
-html {
-  scroll-behavior: smooth;
-}
+    background-color: #d0e7fc;
+    padding: 60px 20px;
+    border-radius: 10px;
+  }
 
-#contact input, #contact textarea {
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-#contact .btn-primary {
-  background-color: #007bff;
-  border: none;
-}
-#contact .btn-primary:hover {
-  background-color: #0056b3;
-}
+  html {
+    scroll-behavior: smooth;
+  }
 
-    
-  </style>
+  #contact input,
+  #contact textarea {
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  #contact .btn-primary {
+    background-color: #007bff;
+    border: none;
+  }
+
+  #contact .btn-primary:hover {
+    background-color: #0056b3;
+  }
+</style>
+
 </head>
 <body>
 
