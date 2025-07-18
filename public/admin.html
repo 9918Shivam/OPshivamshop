@@ -11,6 +11,9 @@
 <body>
 
   <div class="container py-5">
+    <a href="index.html" class="text-decoration-none d-block mb-3">
+  <i class="bi bi-arrow-left"></i> Back to Home
+</a>
     <h2 class="mb-4 text-center">Admin Panel</h2>
 
     <div id="loginSection" style="max-width:400px;margin:auto">
@@ -397,7 +400,7 @@ addProdBtn.onclick = async () => {
 
     // const data = await res.json();
     // if (!res.ok) throw new Error(data.message || 'Error saving product');
-    
+
     if (!res.ok) {
   const text = await res.text(); // fallback to raw text
   console.error('Server response:', text);
