@@ -100,34 +100,37 @@ function renderProductsByCategory(products) {
 
 
 
-// function renderProducts(list, id = 'productGrid') {
-//   const grid = document.getElementById(id);
-//   if (!grid) return;
-//   grid.innerHTML = '';
-//   if (!list.length) {
-//     grid.innerHTML = '<p class="text-muted">No products.</p>';
-//     return;
-//   }
-//   list.forEach(p => {
-//     const col = document.createElement('div');
-//     col.className = 'col-6 col-md-4 col-lg-3';
-//     col.innerHTML = `
-//       <div class="card h-100 shadow-sm" style="cursor:pointer">
-//         <img src="${getPrimaryImage(p)}" class="card-img-top">
-//         <div class="card-body">
-//           <h6 class="fw-bold">${p.name}</h6>
-            
-//           ${(p.price && p.showPrice) ? `<span class="text-primary fw-semibold">₹${p.price}</span>` : ''}
+function renderProducts(list, id = 'productGrid') {
+  const grid = document.getElementById(id);
+  if (!grid) return;
+  grid.innerHTML = '';
+  
+  if (!list.length) {
+    grid.innerHTML = '<p class="text-muted">No products.</p>';
+    return;
+  }
 
-//         </div>
-//       </div>`;
-//     col.querySelector('.card').onclick = () => {
-//       location.href = 'product.html?id=' + (p._id || p.id);
+  list.forEach(p => {
+    const col = document.createElement('div');
+    col.className = 'col-6 col-md-4 col-lg-3';
+    col.innerHTML = `
+      <div class="card h-100 shadow-sm" style="cursor:pointer">
+        <img src="${getPrimaryImage(p)}" class="card-img-top" style="height:200px;object-fit:cover;" alt="${p.name}">
+        <div class="card-body">
+          <h6 class="fw-bold">${p.name}</h6>
+          ${(p.price && p.showPrice) ? `<span class="text-primary fw-semibold">₹${p.price}</span>` : ''}
+        </div>
+      </div>`;
+    
+    col.querySelector('.card').onclick = () => {
+      location.href = 'product.html?id=' + (p._id || p.id);
+    };
 
-//     };
-//     grid.appendChild(col);
-//   });
-// }
+    grid.appendChild(col);
+  });
+}
+
+
 
 // for online product display
 function renderShopCats(products) {

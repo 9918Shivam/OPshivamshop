@@ -43,7 +43,7 @@
         if (filtered.length === 0) {
           productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
         } else {
-          renderProducts(filtered); // This should populate productGrid
+          renderProducts(filtered, 'productGrid'); // This should populate productGrid
         }
       })
       .catch(err => {
