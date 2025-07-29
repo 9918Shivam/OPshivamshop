@@ -29,31 +29,21 @@
     const catTitle = document.getElementById('catTitle');
     const productGrid = document.getElementById('productGrid');
 
+    // Set title and clear product grid early
     catTitle.textContent = cat.replace(/-/g, ' ');
-    productGrid.innerHTML = '<p class="text-muted">Loading...</p>';
+    productGrid.innerHTML = ''; // Clear everything before fetch
 
-    fetch('/products?category=' + encodeURIComponent(cat))
+    fetch('/products')
       .then(res => res.json())
       .then(products => {
-        if (!products.length) {
+        const filtered = products.filter(p =>
+          p.category && p.category.toLowerCase() === cat.toLowerCase()
+        );
+
+        if (filtered.length === 0) {
           productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
         } else {
-          productGrid.innerHTML = ''; // clear loading text
-          products.forEach(p => {
-            const img = (p.images || [])[0] || 'https://via.placeholder.com/300';
-            const card = document.createElement('div');
-            card.className = 'col-md-4 col-sm-6';
-            card.innerHTML = `
-              <div class="card h-100">
-                <img src="${img}" class="card-img-top" style="height:200px;object-fit:cover;" alt="${p.name}">
-                <div class="card-body">
-                  <h5 class="card-title">${p.name}</h5>
-                  <p class="card-text">${p.description || ''}</p>
-                  ${p.price ? `<p class="text-primary fw-bold">₹${p.price}</p>` : ''}
-                </div>
-              </div>`;
-            productGrid.appendChild(card);
-          });
+          renderProducts(filtered); // This should populate productGrid
         }
       })
       .catch(err => {
@@ -62,9 +52,6 @@
       });
   });
 </script>
-
-
-
 
 </body>
 </html>
