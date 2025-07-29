@@ -1,7 +1,4 @@
 
-
-
-
 const LS_PRODUCTS = 'ope_products',
       LS_USERS = 'ope_users',
       LS_CURRENT_USER = 'ope_current_user';
@@ -49,6 +46,53 @@ function refreshAuth() {
 //     userDisplay.classList.add('d-none');
 //   }
 // }
+
+function renderProductsByCategory(products) {
+  const container = document.getElementById('allProductsSection');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // Group by category
+  const grouped = {};
+  products.forEach(p => {
+    const cat = p.category || 'Other';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(p);
+  });
+
+  // Render each category group
+  Object.entries(grouped).forEach(([cat, items]) => {
+    const section = document.createElement('section');
+    section.className = 'mb-5';
+
+    section.innerHTML = `
+      <h5 class="text-capitalize mb-3">${cat}</h5>
+      <div class="row g-3">
+        ${items.map(p => `
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="card h-100 shadow-sm" style="cursor:pointer">
+              <img src="${getPrimaryImage(p)}" class="card-img-top" alt="${p.name}">
+              <div class="card-body">
+                <h6 class="fw-bold">${p.name}</h6>
+                ${(p.price && p.showPrice) ? `<span class="text-primary fw-semibold">₹${p.price}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(section);
+
+    // Attach click handlers
+    section.querySelectorAll('.card').forEach((card, i) => {
+      card.onclick = () => {
+        location.href = 'product.html?id=' + (items[i]._id || items[i].id);
+      };
+    });
+  });
+}
+
+
 
 
 function renderProducts(list, id = 'productGrid') {
@@ -211,7 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       renderShopCats(products);
       renderCategoryNav(products);
-      renderProducts(products); // ✅ Display products after data loads
+      //renderProducts(products); // ✅ Display products after data loads
+      renderProductsByCategory(products);
     })
     .catch(err => {
       console.error('Product fetch error:', err);
@@ -230,13 +275,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const clean = str => str.trim().toLowerCase();
     search.addEventListener('input', e => {
       const term = clean(e.target.value);
-      if (!term) return renderProducts(products);
+      if (!term) return renderProductsByCategory(products);
       const results = products.filter(p =>
         (p.name || '').toLowerCase().includes(term) ||
         (p.features || '').toLowerCase().includes(term) ||
         (p.category || '').toLowerCase().includes(term)
       );
-      renderProducts(results);
+       renderProductsByCategory(results);
     });
     search.closest('form').addEventListener('submit', e => e.preventDefault());
   }
