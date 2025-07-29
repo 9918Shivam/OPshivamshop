@@ -187,25 +187,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-  const grid = document.getElementById('productGrid');  //---- for better page reload and product render
-  if (grid) grid.innerHTML = '<p class="text-muted">Loading products...</p>';
+  const grid = document.getElementById('productGrid');
+  if (grid) {
+    grid.innerHTML = `
+      <div class="text-center my-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-2">Loading products...</p>
+      </div>`;
+  }
 
   fetch('/products')
     .then(res => {
-      if (!res.ok) throw new Error('Failed to fetch');
+      if (!res.ok) throw new Error('Failed to fetch products');
       return res.json();
     })
     .then(data => {
       products = data;
+
+      // Optional: sort products if needed
+      products.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
       renderShopCats(products);
       renderCategoryNav(products);
-      renderProducts(products); // ✅ Show products immediately
+      renderProducts(products); // ✅ Display products after data loads
     })
     .catch(err => {
       console.error('Product fetch error:', err);
-      if (grid) grid.innerHTML = '<p class="text-danger">Failed to load products. Please try again later.</p>';
-    
-  });
+      if (grid) {
+        grid.innerHTML = `
+          <div class="text-center my-4">
+            <p class="text-danger">⚠️ Failed to load products. Please try again later.</p>
+          </div>`;
+      }
+    });
+
   refreshAuth();
 
   const search = document.getElementById('searchInput');

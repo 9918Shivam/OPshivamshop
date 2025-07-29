@@ -29,21 +29,16 @@
     const catTitle = document.getElementById('catTitle');
     const productGrid = document.getElementById('productGrid');
 
-    // Set title and clear product grid early
     catTitle.textContent = cat.replace(/-/g, ' ');
-    productGrid.innerHTML = ''; // Clear everything before fetch
+    productGrid.innerHTML = '<p class="text-muted">Loading...</p>';
 
-    fetch('/products')
+    fetch('/products?category=' + encodeURIComponent(cat))
       .then(res => res.json())
       .then(products => {
-        const filtered = products.filter(p =>
-          p.category && p.category.toLowerCase() === cat.toLowerCase()
-        );
-
-        if (filtered.length === 0) {
+        if (!products.length) {
           productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
         } else {
-          renderProducts(filtered); // This should populate productGrid
+          renderProducts(products); // from script.js
         }
       })
       .catch(err => {
@@ -52,6 +47,7 @@
       });
   });
 </script>
+
 
 
 </body>

@@ -1,11 +1,10 @@
 // To connect backend server to MongoDB Atlas
-
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const path = require('path');
-require('dotenv').config(); // for using .env file
+require('dotenv').config(); // Load env variables
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,14 +20,25 @@ mongoose.connect(process.env.MONGO_URI, {
 }).then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Schema and Model
+// User Schema and Model
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String
 });
-
 const User = mongoose.model('User', userSchema);
+
+// Product Schema and Model
+const productSchema = new mongoose.Schema({
+  name: String,
+  price: String,
+  showPrice: Boolean,
+  features: String,
+  category: String,
+  images: [String],
+  primary: Number
+});
+const Product = mongoose.model('Product', productSchema);
 
 // Signup Route
 app.post('/signup', async (req, res) => {
@@ -54,6 +64,35 @@ app.post('/login', async (req, res) => {
   res.json({ message: 'Login successful', name: user.name, email: user.email });
 });
 
+// ✅ Products Route with optional category search (Atlas Search)
+app.get('/products', async (req, res) => {
+  const { category } = req.query;
+
+  try {
+    if (category) {
+      const results = await Product.aggregate([
+        {
+          $search: {
+            index: 'category', // Name of your search index in MongoDB Atlas
+            text: {
+              query: category,
+              path: 'category',
+              fuzzy: {} // Optional typo-tolerance
+            }
+          }
+        }
+      ]);
+      return res.json(results);
+    } else {
+      const products = await Product.find();
+      res.json(products);
+    }
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    res.status(500).json({ message: 'Failed to fetch products' });
+  }
+});
+
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -64,6 +103,7 @@ app.get('*', (req, res) => {
 
 // Start server
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+
 
 
 
