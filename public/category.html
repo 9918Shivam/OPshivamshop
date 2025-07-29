@@ -38,7 +38,22 @@
         if (!products.length) {
           productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
         } else {
-          renderProducts(products); // from script.js
+          productGrid.innerHTML = ''; // clear loading text
+          products.forEach(p => {
+            const img = (p.images || [])[0] || 'https://via.placeholder.com/300';
+            const card = document.createElement('div');
+            card.className = 'col-md-4 col-sm-6';
+            card.innerHTML = `
+              <div class="card h-100">
+                <img src="${img}" class="card-img-top" style="height:200px;object-fit:cover;" alt="${p.name}">
+                <div class="card-body">
+                  <h5 class="card-title">${p.name}</h5>
+                  <p class="card-text">${p.description || ''}</p>
+                  ${p.price ? `<p class="text-primary fw-bold">₹${p.price}</p>` : ''}
+                </div>
+              </div>`;
+            productGrid.appendChild(card);
+          });
         }
       })
       .catch(err => {
@@ -47,6 +62,7 @@
       });
   });
 </script>
+
 
 
 
