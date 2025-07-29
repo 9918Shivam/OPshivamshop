@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>`;
   }
 
-  fetch('/products')
+fetch('https://opelectronicshop.onrender.com/products')
     .then(res => {
       if (!res.ok) throw new Error('Failed to fetch products');
       return res.json();

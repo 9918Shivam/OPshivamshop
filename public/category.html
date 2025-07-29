@@ -23,44 +23,37 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const params = new URLSearchParams(window.location.search);
-      const cat = params.get('cat') || '';
-      const catTitle = document.getElementById('catTitle');
-      const productGrid = document.getElementById('productGrid');
+  const BACKEND_URL = 'https://opelectronicshop.onrender.com'; // Replace with your backend URL
 
-      // Set category title
-      catTitle.textContent = cat.replace(/-/g, ' ');
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat') || '';
+    const catTitle = document.getElementById('catTitle');
+    const productGrid = document.getElementById('productGrid');
 
-      // Show loading spinner
-      productGrid.innerHTML = `
-        <div class="text-center my-4 w-100">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <p class="text-muted mt-2">Loading products...</p>
-        </div>`;
+    catTitle.textContent = cat.replace(/-/g, ' ');
+    productGrid.innerHTML = '<p class="text-muted">Loading...</p>';
 
-      // Fetch all products and filter by category
-      fetch('/products')
-        .then(res => res.json())
-        .then(products => {
-          const filtered = products.filter(p =>
-            p.category && p.category.toLowerCase() === cat.toLowerCase()
-          );
+    fetch(`${BACKEND_URL}/products`)
+      .then(res => res.json())
+      .then(products => {
+        const filtered = products.filter(p =>
+          p.category && p.category.toLowerCase() === cat.toLowerCase()
+        );
 
-          if (filtered.length === 0) {
-            productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
-          } else {
-            renderProducts(filtered, 'productGrid');
-          }
-        })
-        .catch(err => {
-          console.error('Error loading products:', err);
-          productGrid.innerHTML = '<p class="text-danger">Failed to load products.</p>';
-        });
-    });
-  </script>
+        if (filtered.length === 0) {
+          productGrid.innerHTML = '<p class="text-muted">Nothing here yet.</p>';
+        } else {
+          renderProducts(filtered);
+        }
+      })
+      .catch(err => {
+        console.error('Error loading products:', err);
+        productGrid.innerHTML = '<p class="text-danger">Failed to load products.</p>';
+      });
+  });
+</script>
+
 
 </body>
 </html>
