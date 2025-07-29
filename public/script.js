@@ -5,6 +5,10 @@ const LS_PRODUCTS = 'ope_products',
 
       
 let products = [];
+let chunkSize = 8;   // How many items to load at once
+let currentChunk = 0;
+let groupedProducts = {};
+
 
 
 const getLS = key => JSON.parse(localStorage.getItem(key) || '[]');
@@ -47,28 +51,88 @@ function refreshAuth() {
 //   }
 // }
 
+
+
+
+//  ------------------all product by category
+// function renderProductsByCategory(products) {
+//   const container = document.getElementById('allProductsSection');
+//   if (!container) return;
+//   container.innerHTML = '';
+
+//   // Group by category
+//   const grouped = {};
+//   products.forEach(p => {
+//     const cat = p.category || 'Other';
+//     if (!grouped[cat]) grouped[cat] = [];
+//     grouped[cat].push(p);
+//   });
+
+//   // Render each category group
+//   Object.entries(grouped).forEach(([cat, items]) => {
+//     const section = document.createElement('section');
+//     section.className = 'mb-5';
+
+//     section.innerHTML = `
+//       <h5 class="text-capitalize mb-3">${cat}</h5>
+//       <div class="row g-3">
+//         ${items.map(p => `
+//           <div class="col-6 col-md-4 col-lg-3">
+//             <div class="card h-100 shadow-sm" style="cursor:pointer">
+//               <img src="${getPrimaryImage(p)}" class="card-img-top" alt="${p.name}">
+//               <div class="card-body">
+//                 <h6 class="fw-bold">${p.name}</h6>
+//                 ${(p.price && p.showPrice) ? `<span class="text-primary fw-semibold">₹${p.price}</span>` : ''}
+//               </div>
+//             </div>
+//           </div>
+//         `).join('')}
+//       </div>
+//     `;
+//     container.appendChild(section);
+
+//     // Attach click handlers
+//     section.querySelectorAll('.card').forEach((card, i) => {
+//       card.onclick = () => {
+//         location.href = 'product.html?id=' + (items[i]._id || items[i].id);
+//       };
+//     });
+//   });
+// }
 function renderProductsByCategory(products) {
   const container = document.getElementById('allProductsSection');
   if (!container) return;
   container.innerHTML = '';
 
   // Group by category
-  const grouped = {};
+  groupedProducts = {};
   products.forEach(p => {
     const cat = p.category || 'Other';
-    if (!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push(p);
+    if (!groupedProducts[cat]) groupedProducts[cat] = [];
+    groupedProducts[cat].push(p);
   });
 
-  // Render each category group
-  Object.entries(grouped).forEach(([cat, items]) => {
+  currentChunk = 0;
+  renderNextChunk(); // Call to render first chunk
+}
+
+function renderNextChunk() {
+  const container = document.getElementById('allProductsSection');
+  const chunkCategories = Object.entries(groupedProducts);
+
+  for (let [cat, items] of chunkCategories) {
+    const start = currentChunk * chunkSize;
+    const end = start + chunkSize;
+    const chunkItems = items.slice(start, end);
+
+    if (!chunkItems.length) continue;
+
     const section = document.createElement('section');
     section.className = 'mb-5';
-
     section.innerHTML = `
       <h5 class="text-capitalize mb-3">${cat}</h5>
       <div class="row g-3">
-        ${items.map(p => `
+        ${chunkItems.map(p => `
           <div class="col-6 col-md-4 col-lg-3">
             <div class="card h-100 shadow-sm" style="cursor:pointer">
               <img src="${getPrimaryImage(p)}" class="card-img-top" alt="${p.name}">
@@ -79,19 +143,25 @@ function renderProductsByCategory(products) {
             </div>
           </div>
         `).join('')}
-      </div>
-    `;
+      </div>`;
     container.appendChild(section);
 
     // Attach click handlers
     section.querySelectorAll('.card').forEach((card, i) => {
       card.onclick = () => {
-        location.href = 'product.html?id=' + (items[i]._id || items[i].id);
+        location.href = 'product.html?id=' + (chunkItems[i]._id || chunkItems[i].id);
       };
     });
-  });
-}
+  }
 
+  currentChunk++;
+
+  // Show or hide Load More button
+  const btn = document.getElementById('loadMoreBtn');
+  const totalItems = Object.values(groupedProducts).reduce((a, b) => a + b.length, 0);
+  const loadedItems = currentChunk * chunkSize;
+  if (btn) btn.style.display = loadedItems >= totalItems ? 'none' : 'block';
+}
 
 
 
@@ -227,9 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //     products = data;
 //     renderShopCats(products);
 //     renderCategoryNav(products);
-    // DO NOT call renderProducts() here
-
-
+    // DO NOT call renderProducts() her
 
   const grid = document.getElementById('productGrid');
   if (grid) {
@@ -255,8 +323,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       renderShopCats(products);
       renderCategoryNav(products);
-      //renderProducts(products); // ✅ Display products after data loads
       renderProductsByCategory(products);
+
+      // ✅ Attach click listener AFTER rendering products
+      const loadBtn = document.getElementById('loadMoreBtn');
+      if (loadBtn) {
+        loadBtn.addEventListener('click', renderNextChunk);
+      }
     })
     .catch(err => {
       console.error('Product fetch error:', err);
@@ -269,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
   refreshAuth();
+
 
   const search = document.getElementById('searchInput');
   if (search) {
