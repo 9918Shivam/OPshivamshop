@@ -234,16 +234,17 @@ document.addEventListener('DOMContentLoaded', () => {
 //     renderCategoryNav(products);
     // DO NOT call renderProducts() her
 
-  const grid = document.getElementById('productGrid');
-  if (grid) {
-    grid.innerHTML = `
-      <div class="text-center my-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="text-muted mt-2">Loading products...</p>
-      </div>`;
-  }
+  const productSection = document.getElementById('allProductsSection');
+if (productSection) {
+  productSection.innerHTML = `
+    <div class="text-center my-4 w-100">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="text-muted mt-2">Loading products...</p>
+    </div>`;
+}
+
 
   fetch('/products')
     .then(res => {
@@ -307,28 +308,59 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function signup(email, pwd) {
-  const users = getLS(LS_USERS);
-  if (users.some(u => u.email === email)) {
-    alert('User exists');
-    return;
-  }
-  users.push({ email, password: pwd });
-  setLS(LS_USERS, users);
+
+async function signup(email, pwd) {
+  const name = prompt("Enter your name:");
+  const res = await fetch('/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password: pwd })
+  });
+  const data = await res.json();
+  if (!res.ok) return alert(data.message || 'Signup failed');
   alert('Account created');
   bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
 }
 
-function login(email, pwd) {
-  const users = getLS(LS_USERS);
-  if (!users.some(u => u.email === email && u.password === pwd)) {
-    alert('Invalid credentials');
-    return;
-  }
-  localStorage.setItem(LS_CURRENT_USER, email);
+// function signup(email, pwd) {
+//   const users = getLS(LS_USERS);
+//   if (users.some(u => u.email === email)) {
+//     alert('User exists');
+//     return;
+//   }
+//   users.push({ email, password: pwd });
+//   setLS(LS_USERS, users);
+//   alert('Account created');
+//   bootstrap.Modal.getInstance(document.getElementById('signupModal')).hide();
+// }
+
+
+
+async function login(email, pwd) {
+  const res = await fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pwd })
+  });
+  const data = await res.json();
+  if (!res.ok) return alert(data.message || 'Login failed');
+  
+  localStorage.setItem(LS_CURRENT_USER, JSON.stringify({ name: data.name, email: data.email }));
   bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
   refreshAuth();
 }
+
+
+// function login(email, pwd) {
+//   const users = getLS(LS_USERS);
+//   if (!users.some(u => u.email === email && u.password === pwd)) {
+//     alert('Invalid credentials');
+//     return;
+//   }
+//   localStorage.setItem(LS_CURRENT_USER, email);
+//   bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+//   refreshAuth();
+// }
 
 function logout() {
   localStorage.removeItem(LS_CURRENT_USER);
