@@ -171,19 +171,40 @@ function renderCategoryNav(products) {
 // }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // const products = getLS(LS_PRODUCTS); // for local storage
+  // const products = getLS(LS_PRODUCTS); //----- for local storage
   // renderProducts(products);
   // renderShopCats();
   // renderCategoryNav();
   
-  // script.js — only fetch + store globally
-fetch('/products')
-  .then(res => res.json())
-  .then(data => {
-    products = data;
-    renderShopCats(products);
-    renderCategoryNav(products);
+  //----- script.js — only fetch + store globally-----
+// fetch('/products')
+//   .then(res => res.json())
+//   .then(data => {
+//     products = data;
+//     renderShopCats(products);
+//     renderCategoryNav(products);
     // DO NOT call renderProducts() here
+
+
+
+  const grid = document.getElementById('productGrid');  //---- for better page reload and product render
+  if (grid) grid.innerHTML = '<p class="text-muted">Loading products...</p>';
+
+  fetch('/products')
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to fetch');
+      return res.json();
+    })
+    .then(data => {
+      products = data;
+      renderShopCats(products);
+      renderCategoryNav(products);
+      renderProducts(products); // ✅ Show products immediately
+    })
+    .catch(err => {
+      console.error('Product fetch error:', err);
+      if (grid) grid.innerHTML = '<p class="text-danger">Failed to load products. Please try again later.</p>';
+    
   });
   refreshAuth();
 
