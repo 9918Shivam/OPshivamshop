@@ -111,6 +111,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+   const API = "https://opelectronicshop.onrender.com";
+
     // const LS_PRODUCTS = 'ope_products';
     // const getLS = k => JSON.parse(localStorage.getItem(k) || '[]');
     // const setLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
@@ -119,20 +121,33 @@
 
 
 
-    async function renderList() {
+   async function renderList() {
   const list = document.getElementById('productList');
   list.innerHTML = '';
 
   try {
-    const res = await fetch('/products');
+    const res = await fetch(API + '/products');
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Server returned:", text);
+      throw new Error("Failed to fetch products");
+    }
+
     const products = await res.json();
 
-    products.forEach((p, i) => {
-      const img = p.images ? p.images[p.primary || 0] : p.image;
+    if (!products.length) {
+      list.innerHTML = '<li class="text-muted">No products found</li>';
+      return;
+    }
+
+    products.forEach((p) => {
+      const img = p.images ? p.images[p.primary || 0] : '';
       const li = document.createElement('li');
       li.className = 'list-group-item d-flex justify-content-between align-items-start';
 
-      const priceText = p.price ? ` <span class="text-muted">(₹${p.price})</span>` : '';
+      const priceText = p.price && p.showPrice ? 
+        ` <span class="text-muted">(₹${p.price})</span>` : '';
 
       li.innerHTML = `
         <div>
@@ -145,33 +160,90 @@
           <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
         </div>`;
 
-      li.querySelector('.editBtn').onclick = () => fillForm(p, i);
+      li.querySelector('.editBtn').onclick = () => fillForm(p);
       li.querySelector('.delBtn').onclick = async () => {
-  if (!confirm(`Delete product "${p.name}"?`)) return;
+        if (!confirm(`Delete product "${p.name}"?`)) return;
 
-  try {
-    const res = await fetch(`/products/${p._id}`, {
-      method: 'DELETE'
-    });
-    if (res.ok) {
-      alert('Product deleted');
-      renderList();
-    } else {
-      alert('Failed to delete product');
-    }
-  } catch (err) {
-    console.error('Delete error:', err);
-    alert('Error deleting product');
-  }
-};
+        try {
+          const delRes = await fetch(API + `/products/${p._id}`, {
+            method: 'DELETE'
+          });
+
+          if (!delRes.ok) throw new Error();
+
+          alert('Product deleted');
+          renderList();
+        } catch (err) {
+          alert('Failed to delete product');
+          console.error(err);
+        }
+      };
 
       list.appendChild(li);
     });
+
   } catch (err) {
     console.error('Failed to fetch product list:', err);
     list.innerHTML = '<li class="text-danger">Failed to load products</li>';
   }
 }
+
+
+
+
+//     async function renderList() {
+//   const list = document.getElementById('productList');
+//   list.innerHTML = '';
+
+//   try {
+//     const res = await fetch('/products');
+//     const products = await res.json();
+
+//     products.forEach((p, i) => {
+//       const img = p.images ? p.images[p.primary || 0] : p.image;
+//       const li = document.createElement('li');
+//       li.className = 'list-group-item d-flex justify-content-between align-items-start';
+
+//       const priceText = p.price ? ` <span class="text-muted">(₹${p.price})</span>` : '';
+
+//       li.innerHTML = `
+//         <div>
+//           <img src="${img}" style="height:30px;width:30px;object-fit:cover;margin-right:8px;">
+//           <strong>${p.name}</strong>${priceText}
+//           <br><small>${p.category}</small>
+//         </div>
+//         <div>
+//           <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
+//           <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
+//         </div>`;
+
+//       li.querySelector('.editBtn').onclick = () => fillForm(p, i);
+//       li.querySelector('.delBtn').onclick = async () => {
+//   if (!confirm(`Delete product "${p.name}"?`)) return;
+
+//   try {
+//     const res = await fetch(API +`/products/${p._id}`, {
+//       method: 'DELETE'
+//     });
+//     if (res.ok) {
+//       alert('Product deleted');
+//       renderList();
+//     } else {
+//       alert('Failed to delete product');
+//     }
+//   } catch (err) {
+//     console.error('Delete error:', err);
+//     alert('Error deleting product');
+//   }
+// };
+
+//       list.appendChild(li);
+//     });
+//   } catch (err) {
+//     console.error('Failed to fetch product list:', err);
+//     list.innerHTML = '<li class="text-danger">Failed to load products</li>';
+//   }
+// }
 
 
 //     function renderList() {         // local storage
@@ -243,16 +315,17 @@ document.getElementById('showPriceChk').checked = !!p.showPrice;
   editingProductId = p._id;
 }
 
-
-
 async function updateCategoryDropdown() {
   const sel = document.getElementById('prodCatSelect');
+
   try {
-    const res = await fetch('/products');
+    const res = await fetch(API + '/products');
     const products = await res.json();
+
     const usedCats = [...new Set(products.map(p => p.category).filter(Boolean))];
 
     sel.innerHTML = '';
+
     const placeholder = document.createElement('option');
     placeholder.textContent = '-- Select a category --';
     placeholder.disabled = true;
@@ -262,13 +335,40 @@ async function updateCategoryDropdown() {
     usedCats.forEach(cat => {
       const opt = document.createElement('option');
       opt.value = cat;
-      opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+      opt.textContent = cat;
       sel.appendChild(opt);
     });
+
   } catch (err) {
     console.error('Failed to fetch categories', err);
   }
 }
+
+
+// async function updateCategoryDropdown() {
+//   const sel = document.getElementById('prodCatSelect');
+//   try {
+//     const res = await fetch('/products');
+//     const products = await res.json();
+//     const usedCats = [...new Set(products.map(p => p.category).filter(Boolean))];
+
+//     sel.innerHTML = '';
+//     const placeholder = document.createElement('option');
+//     placeholder.textContent = '-- Select a category --';
+//     placeholder.disabled = true;
+//     placeholder.selected = true;
+//     sel.appendChild(placeholder);
+
+//     usedCats.forEach(cat => {
+//       const opt = document.createElement('option');
+//       opt.value = cat;
+//       opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+//       sel.appendChild(opt);
+//     });
+//   } catch (err) {
+//     console.error('Failed to fetch categories', err);
+//   }
+// }
 
 
 //     function updateCategoryDropdown() {   // local storage
@@ -356,6 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
 addProdBtn.onclick = async () => {
   const imgs = [];
   const seen = new Set();
+
   for (let k = 1; k <= 5; k++) {
     const val = document.getElementById('prodImg' + k).value.trim();
     if (val && !seen.has(val)) {
@@ -363,6 +464,7 @@ addProdBtn.onclick = async () => {
       seen.add(val);
     }
   }
+
   if (!imgs.length) return alert('At least one image is required');
 
   const category = prodCatNew.value.trim() || prodCatSelect.value.trim();
@@ -382,43 +484,107 @@ addProdBtn.onclick = async () => {
 
   try {
     let res;
+
     if (editingProductId) {
-      // 🟡 Edit existing product
-      res = await fetch(`/products/${editingProductId}`, {
+      res = await fetch(API + `/products/${editingProductId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(item)
       });
     } else {
-      // 🟢 Add new product
-      res = await fetch('/products', {
+      res = await fetch(API + '/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(item)
       });
     }
 
-    // const data = await res.json();
-    // if (!res.ok) throw new Error(data.message || 'Error saving product');
-
     if (!res.ok) {
-  const text = await res.text(); // fallback to raw text
-  console.error('Server response:', text);
-  throw new Error('Error saving product');
-}
-const data = await res.json();
+      const text = await res.text();
+      console.error(text);
+      throw new Error();
+    }
 
-
-    alert(data.message || 'Saved successfully');
+    alert('Saved successfully');
     editingProductId = null;
-    resetForm(); // ✅ Clear the form
+    resetForm();
     renderList();
     updateCategoryDropdown();
+
   } catch (err) {
     alert('Failed to save product');
     console.error(err);
   }
 };
+
+
+   
+// addProdBtn.onclick = async () => {
+//   const imgs = [];
+//   const seen = new Set();
+//   for (let k = 1; k <= 5; k++) {
+//     const val = document.getElementById('prodImg' + k).value.trim();
+//     if (val && !seen.has(val)) {
+//       imgs.push(val);
+//       seen.add(val);
+//     }
+//   }
+//   if (!imgs.length) return alert('At least one image is required');
+
+//   const category = prodCatNew.value.trim() || prodCatSelect.value.trim();
+//   if (!prodName.value.trim() || !category) {
+//     return alert('Name and category are required');
+//   }
+
+//   const item = {
+//     name: prodName.value.trim(),
+//     price: prodPrice.value.trim() || '',
+//     showPrice: document.getElementById('showPriceChk').checked,
+//     category,
+//     features: prodFeatures.value.trim(),
+//     images: imgs,
+//     primary: parseInt(prodPrimary.value) || 0
+//   };
+
+//   try {
+//     let res;
+//     if (editingProductId) {
+//       // 🟡 Edit existing product
+//       res = await fetch(`/products/${editingProductId}`, {
+//         method: 'PUT',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(item)
+//       });
+//     } else {
+//       // 🟢 Add new product
+//       res = await fetch('/products', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(item)
+//       });
+//     }
+
+//     // const data = await res.json();
+//     // if (!res.ok) throw new Error(data.message || 'Error saving product');
+
+//     if (!res.ok) {
+//   const text = await res.text(); // fallback to raw text
+//   console.error('Server response:', text);
+//   throw new Error('Error saving product');
+// }
+// const data = await res.json();
+
+
+//     alert(data.message || 'Saved successfully');
+//     editingProductId = null;
+//     resetForm(); // ✅ Clear the form
+//     renderList();
+//     updateCategoryDropdown();
+//   } catch (err) {
+//     alert('Failed to save product');
+//     console.error(err);
+//   }
+// };
 
 function resetForm() {
   document.querySelectorAll('#formSection input, #formSection textarea').forEach(el => el.value = '');
