@@ -1,6 +1,7 @@
 
 
 
+const API = "https://opelectronicshop.onrender.com";
 
 const LS_PRODUCTS = 'ope_products',
       LS_USERS = 'ope_users',
@@ -252,7 +253,7 @@ if (productSection) {
 }
 
 
-  fetch('/products')
+  fetch(API +'/products')
     .then(res => {
       if (!res.ok) throw new Error('Failed to fetch products');
       return res.json();
@@ -317,7 +318,7 @@ if (productSection) {
 
 async function signup(email, pwd) {
   const name = prompt("Enter your name:");
-  const res = await fetch('/signup', {
+  const res = await fetch(API +'/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, password: pwd })
@@ -343,7 +344,7 @@ async function signup(email, pwd) {
 
 
 async function login(email, pwd) {
-  const res = await fetch('/login', {
+  const res = await fetch(API +'/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password: pwd })
