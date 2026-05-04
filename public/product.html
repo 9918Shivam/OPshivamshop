@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
 
-  fetch('/products') // optionally replace with `/products/${id}` later
+  fetch('https://opelectronicshop.onrender.com/products') // optionally replace with `/products/${id}` later
     .then(res => res.json())
     .then(allProducts => {
       const p = allProducts.find(prod => (prod._id || prod.id) === id);
