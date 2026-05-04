@@ -29,7 +29,7 @@ function getPrimaryImage(p) {
 function refreshAuth() {
   //const user = localStorage.getItem('ope_current_user');
   const user = JSON.parse(localStorage.getItem('ope_current_user') || 'null');
-
+document.getElementById('logoutBtn')?.classList.add('d-none');
   document.getElementById('loginBtn')?.classList.toggle('d-none', !!user);
   document.getElementById('signupBtn')?.classList.toggle('d-none', !!user);
   document.getElementById('logoutBtn')?.classList.toggle('d-none', !user);
