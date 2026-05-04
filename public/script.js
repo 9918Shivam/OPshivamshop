@@ -226,7 +226,7 @@ function renderCategoryNav(products) {
 //     .join('');
 // }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async() => {
   // const products = getLS(LS_PRODUCTS); //----- for local storage
   // renderProducts(products);
   // renderShopCats();
@@ -253,32 +253,79 @@ if (productSection) {
 }
 
 
-  fetch(API +'/products')
-    .then(res => {
-      if (!res.ok) throw new Error('Failed to fetch products');
-      return res.json();
-    })
-    .then(data => {
-      products = data;
+      
+// ✅ Fetch with retry (handles Render free tier sleep)
+async function fetchProducts(retries = 2) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(API + '/products');
+      if (res.ok) return await res.json();
+    } catch (e) {
+      if (i === retries - 1) throw e;
+      // Wait 3 seconds before retrying
+      await new Promise(r => setTimeout(r, 3000));
+    }
+  }
+}
 
-      // Optional: sort products if needed
-      products.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+// Show "waking up" message if taking too long
+const slowTimer = setTimeout(() => {
+  if (productSection) {
+    productSection.innerHTML = `
+      <div class="text-center my-4 w-100">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="text-muted mt-2">Server is waking up, please wait...</p>
+      </div>`;
+  }
+}, 4000); // show this message after 4 seconds
 
-      renderShopCats(products);
-      renderCategoryNav(products);
-      renderProductsByCategory(products);
+try {
+  const data = await fetchProducts();
+  clearTimeout(slowTimer); // cancel the "waking up" message
+  products = data;
+  products.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  renderShopCats(products);
+  renderCategoryNav(products);
+  renderProductsByCategory(products);
+} catch (err) {
+  clearTimeout(slowTimer);
+  console.error('Product fetch error:', err);
+  if (productSection) {
+    productSection.innerHTML = `
+      <div class="text-center my-4">
+        <p class="text-danger">⚠️ Failed to load products. Please try again later.</p>
+      </div>`;
+  }
+}
+
+      
+// To fech product this method is used but restart the system on every 4min we need other method
+  // fetch(API +'/products')
+  //   .then(res => {
+  //     if (!res.ok) throw new Error('Failed to fetch products');
+  //     return res.json();
+  //   })
+  //   .then(data => {
+  //     products = data;
+
+  //     // Optional: sort products if needed
+  //     products.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  //     renderShopCats(products);
+  //     renderCategoryNav(products);
+  //     renderProductsByCategory(products);
 
      
-    })
-    .catch(err => {
-      console.error('Product fetch error:', err);
-      if (grid) {
-        grid.innerHTML = `
-          <div class="text-center my-4">
-            <p class="text-danger">⚠️ Failed to load products. Please try again later.</p>
-          </div>`;
-      }
-    });
+  //   })
+  //   .catch(err => {
+  //     console.error('Product fetch error:', err);
+  //     if (grid) {
+  //       grid.innerHTML = `
+  //         <div class="text-center my-4">
+  //           <p class="text-danger">⚠️ Failed to load products. Please try again later.</p>
+  //         </div>`;
+  //     }
+  //   });
 
   refreshAuth();
 
