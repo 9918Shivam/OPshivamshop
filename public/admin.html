@@ -113,75 +113,69 @@
 
 <script>
   const API = "https://opelectronicshop.onrender.com";
-  let editIdx = null;
   let editingProductId = null;
+  let renderListCalled = false; // ✅ Ensures renderList only fires ONCE on page load
 
   // ─── Render product list ───────────────────────────────────────────────────
-let isRendering = false; // 🔒 Guard to prevent double render
+  async function renderList() {
+    const list = document.getElementById('productList');
+    if (!list) return;
+    list.innerHTML = '<li class="list-group-item text-muted p-2">Loading...</li>';
 
-async function renderList() {
-  if (isRendering) return; // 🛑 Stop if already running
-  isRendering = true;
+    try {
+      const res = await fetch(API + '/products');
+      if (!res.ok) throw new Error("Failed to fetch products");
 
-  const list = document.getElementById('productList');
-  list.innerHTML = '<li class="text-muted p-2">Loading...</li>';
+      const products = await res.json();
+      list.innerHTML = ''; // ✅ Always wipe before appending
 
-  try {
-    const res = await fetch(API + '/products');
-    if (!res.ok) throw new Error("Failed to fetch products");
+      if (!products.length) {
+        list.innerHTML = '<li class="list-group-item text-muted">No products found</li>';
+        return;
+      }
 
-    const products = await res.json();
-    list.innerHTML = ''; // ✅ Clear before rendering
+      products.forEach((p) => {
+        const img = p.images ? p.images[p.primary || 0] : '';
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-    if (!products.length) {
-      list.innerHTML = '<li class="list-group-item text-muted">No products found</li>';
-      return;
+        const priceText = p.price && p.showPrice
+          ? ` <span class="text-muted">(₹${p.price})</span>` : '';
+
+        li.innerHTML = `
+          <div>
+            <img src="${img}" style="height:35px;width:35px;object-fit:cover;margin-right:8px;border-radius:4px;">
+            <strong>${p.name}</strong>${priceText}
+            <br><small class="text-secondary">${p.category}</small>
+          </div>
+          <div>
+            <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
+            <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
+          </div>`;
+
+        li.querySelector('.editBtn').onclick = () => fillForm(p);
+        li.querySelector('.delBtn').onclick = async () => {
+          if (!confirm(`Delete product "${p.name}"?`)) return;
+          try {
+            const delRes = await fetch(API + `/products/${p._id}`, { method: 'DELETE' });
+            if (!delRes.ok) throw new Error();
+            alert('Product deleted');
+            await renderList();
+            await updateCategoryDropdown();
+          } catch (err) {
+            alert('Failed to delete product');
+            console.error(err);
+          }
+        };
+
+        list.appendChild(li);
+      });
+
+    } catch (err) {
+      console.error('Failed to fetch product list:', err);
+      list.innerHTML = '<li class="list-group-item text-danger">Failed to load products. Try refreshing.</li>';
     }
-
-    products.forEach((p) => {
-      const img = p.images ? p.images[p.primary || 0] : '';
-      const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
-
-      const priceText = p.price && p.showPrice
-        ? ` <span class="text-muted">(₹${p.price})</span>` : '';
-
-      li.innerHTML = `
-        <div>
-          <img src="${img}" style="height:35px;width:35px;object-fit:cover;margin-right:8px;border-radius:4px;">
-          <strong>${p.name}</strong>${priceText}
-          <br><small class="text-secondary">${p.category}</small>
-        </div>
-        <div>
-          <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
-          <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
-        </div>`;
-
-      li.querySelector('.editBtn').onclick = () => fillForm(p);
-      li.querySelector('.delBtn').onclick = async () => {
-        if (!confirm(`Delete product "${p.name}"?`)) return;
-        try {
-          const delRes = await fetch(API + `/products/${p._id}`, { method: 'DELETE' });
-          if (!delRes.ok) throw new Error();
-          alert('Product deleted');
-          renderList();
-          updateCategoryDropdown();
-        } catch (err) {
-          alert('Failed to delete product');
-          console.error(err);
-        }
-      };
-
-      list.appendChild(li);
-    });
-
-  } catch (err) {
-    console.error('Failed to fetch product list:', err);
-    list.innerHTML = '<li class="list-group-item text-danger">Failed to load products. Try refreshing.</li>';
-  } finally {
-    isRendering = false; // 🔓 Always unlock when done
   }
-}
 
   // ─── Fill form for editing ─────────────────────────────────────────────────
   function fillForm(p) {
@@ -207,16 +201,14 @@ async function renderList() {
     }
 
     document.getElementById('prodCatNew').value = '';
-    catSelect.style.display = 'block';
     editingProductId = p._id;
-
-    // Scroll to top of form smoothly
     document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
   }
 
   // ─── Update category dropdown ──────────────────────────────────────────────
   async function updateCategoryDropdown() {
     const sel = document.getElementById('prodCatSelect');
+    if (!sel) return;
     try {
       const res = await fetch(API + '/products');
       if (!res.ok) throw new Error();
@@ -248,7 +240,6 @@ async function renderList() {
     document.getElementById('showPriceChk').checked = false;
     document.getElementById('prodBest').checked = false;
     editingProductId = null;
-    editIdx = null;
   }
 
   // ─── Preview uploaded image ────────────────────────────────────────────────
@@ -256,10 +247,21 @@ async function renderList() {
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      document.getElementById(targetId).value = reader.result;
-    };
+    reader.onload = () => { document.getElementById(targetId).value = reader.result; };
     reader.readAsDataURL(file);
+  }
+
+  // ─── Helper: show the admin panel ─────────────────────────────────────────
+  function showAdminPanel(loginSection, formSection) {
+    loginSection.classList.add('d-none');
+    formSection.classList.remove('d-none');
+
+    // ✅ Only call renderList ONCE using the flag
+    if (!renderListCalled) {
+      renderListCalled = true;
+      renderList();
+      updateCategoryDropdown();
+    }
   }
 
   // ─── Main DOMContentLoaded ─────────────────────────────────────────────────
@@ -274,7 +276,12 @@ async function renderList() {
     const correctEmailHash = '75ae7fc7bf509064fec30e237118984dbee108dc5509c48e8b6dc1d97d704876';
     const correctPassHash  = 'daf6a69eeecc349286ed88c0e0a55dbf76826ea5728fe37a6bd0bfa89732f60c';
 
-    // ── Admin Login ──────────────────────────────────────────────────────────
+    // ── Auto-login if session exists ─────────────────────────────────────────
+    if (localStorage.getItem('ope_admin_logged_in') === 'true') {
+      showAdminPanel(loginSection, formSection); // ← uses flag, only fires once
+    }
+
+    // ── Admin Login button ───────────────────────────────────────────────────
     adminLoginBtn.onclick = () => {
       const emailInput = adminEmail.value.trim();
       const passInput  = adminPassword.value.trim();
@@ -288,38 +295,20 @@ async function renderList() {
 
         if (toHex(emailBuf) === correctEmailHash && toHex(passBuf) === correctPassHash) {
           localStorage.setItem('ope_admin_logged_in', 'true');
-          loginSection.classList.add('d-none');
-          formSection.classList.remove('d-none');
-          renderList();
-          updateCategoryDropdown();
+          showAdminPanel(loginSection, formSection); // ← same function, flag prevents double
         } else {
           alert('Invalid email or password');
         }
       });
     };
 
-    // ── Auto-login if session exists ─────────────────────────────────────────
-    if (localStorage.getItem('ope_admin_logged_in') === 'true') {
-      loginSection.classList.add('d-none');
-      formSection.classList.remove('d-none');
-     // ✅ Small delay ensures DOM is fully ready before rendering
-  setTimeout(() => {
-    renderList();
-    updateCategoryDropdown();
-  }, 50);
-    }
-
     // ── Save / Update product ────────────────────────────────────────────────
     addProdBtn.onclick = async () => {
       const imgs = [];
       const seen = new Set();
-
       for (let k = 1; k <= 5; k++) {
         const val = document.getElementById('prodImg' + k).value.trim();
-        if (val && !seen.has(val)) {
-          imgs.push(val);
-          seen.add(val);
-        }
+        if (val && !seen.has(val)) { imgs.push(val); seen.add(val); }
       }
 
       if (!imgs.length) return alert('At least one image is required');
@@ -342,7 +331,6 @@ async function renderList() {
         primary:   parseInt(document.getElementById('prodPrimary').value) || 0
       };
 
-      // Disable button to prevent double submit
       addProdBtn.disabled = true;
       addProdBtn.textContent = 'Saving...';
 
@@ -362,23 +350,18 @@ async function renderList() {
           });
         }
 
-        if (!res.ok) {
-          const text = await res.text();
-          console.error(text);
-          throw new Error();
-        }
+        if (!res.ok) { const text = await res.text(); console.error(text); throw new Error(); }
 
         alert(editingProductId ? 'Product updated!' : 'Product saved!');
         editingProductId = null;
         resetForm();
-        renderList();
-        updateCategoryDropdown();
+        await renderList();           // ✅ await so it completes fully before anything else
+        await updateCategoryDropdown();
 
       } catch (err) {
         alert('Failed to save product. Please try again.');
         console.error(err);
       } finally {
-        // Re-enable button whether success or failure
         addProdBtn.disabled = false;
         addProdBtn.textContent = 'Save Product';
       }
