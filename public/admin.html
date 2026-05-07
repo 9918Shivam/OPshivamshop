@@ -117,77 +117,139 @@
   let currentFetch = null; // ✅ Tracks the current fetch so we can cancel duplicates
 
   // ─── Render product list ───────────────────────────────────────────────────
-  async function renderList() {
-    // ✅ Cancel any previous fetch that hasn't finished yet
-    if (currentFetch) {
-      currentFetch.abort();
-    }
-    currentFetch = new AbortController();
+  let isRendering = false;
 
-    const list = document.getElementById('productList');
-    if (!list) return;
-    list.innerHTML = '<li class="list-group-item text-muted p-2">Loading...</li>';
+async function renderList() {
 
-    try {
-      const res = await fetch(API + '/products', { signal: currentFetch.signal });
-      if (!res.ok) throw new Error("Failed to fetch products");
+  // Prevent duplicate rendering
+  if (isRendering) return;
+  isRendering = true;
 
-      const products = await res.json();
-      
-      // ✅ Wipe list completely before rendering
-      list.innerHTML = '';
-
-      if (!products.length) {
-        list.innerHTML = '<li class="list-group-item text-muted">No products found</li>';
-        return;
-      }
-
-      products.forEach((p) => {
-        const img = p.images ? p.images[p.primary || 0] : '';
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-
-        const priceText = p.price && p.showPrice
-          ? ` <span class="text-muted">(₹${p.price})</span>` : '';
-
-        li.innerHTML = `
-          <div>
-            <img src="${img}" style="height:35px;width:35px;object-fit:cover;margin-right:8px;border-radius:4px;">
-            <strong>${p.name}</strong>${priceText}
-            <br><small class="text-secondary">${p.category}</small>
-          </div>
-          <div>
-            <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
-            <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
-          </div>`;
-
-        li.querySelector('.editBtn').onclick = () => fillForm(p);
-        li.querySelector('.delBtn').onclick = async () => {
-          if (!confirm(`Delete product "${p.name}"?`)) return;
-          try {
-            const delRes = await fetch(API + `/products/${p._id}`, { method: 'DELETE' });
-            if (!delRes.ok) throw new Error();
-            alert('Product deleted');
-            await renderList();
-            await updateCategoryDropdown();
-          } catch (err) {
-            alert('Failed to delete product');
-            console.error(err);
-          }
-        };
-
-        list.appendChild(li);
-      });
-
-    } catch (err) {
-      // Ignore aborted fetch — it's intentional
-      if (err.name === 'AbortError') return;
-      console.error('Failed to fetch product list:', err);
-      list.innerHTML = '<li class="list-group-item text-danger">Failed to load products. Try refreshing.</li>';
-    } finally {
-      currentFetch = null;
-    }
+  const list = document.getElementById('productList');
+  if (!list) {
+    isRendering = false;
+    return;
   }
+
+  list.innerHTML = `
+    <li class="list-group-item text-muted p-2">
+      Loading...
+    </li>
+  `;
+
+  try {
+    const res = await fetch(API + '/products');
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch products');
+    }
+
+    const products = await res.json();
+
+    // Clear old items BEFORE rendering
+    list.innerHTML = '';
+
+    // Prevent accidental duplicate IDs
+    const renderedIds = new Set();
+
+    if (!products.length) {
+      list.innerHTML = `
+        <li class="list-group-item text-muted">
+          No products found
+        </li>
+      `;
+      return;
+    }
+
+    products.forEach((p) => {
+
+      // Skip duplicate products
+      if (renderedIds.has(p._id)) return;
+      renderedIds.add(p._id);
+
+      const img = p.images?.[p.primary || 0] || '';
+
+      const li = document.createElement('li');
+
+      li.className =
+        'list-group-item d-flex justify-content-between align-items-center';
+
+      const priceText =
+        p.price && p.showPrice
+          ? `<span class="text-muted">(₹${p.price})</span>`
+          : '';
+
+      li.innerHTML = `
+        <div>
+          <img src="${img}"
+               style="height:35px;width:35px;object-fit:cover;margin-right:8px;border-radius:4px;">
+
+          <strong>${p.name}</strong>
+          ${priceText}
+
+          <br>
+
+          <small class="text-secondary">
+            ${p.category}
+          </small>
+        </div>
+
+        <div>
+          <button class='btn btn-sm btn-outline-primary me-1 editBtn'>
+            Edit
+          </button>
+
+          <button class='btn btn-sm btn-outline-danger delBtn'>
+            Delete
+          </button>
+        </div>
+      `;
+
+      li.querySelector('.editBtn').onclick = () => fillForm(p);
+
+      li.querySelector('.delBtn').onclick = async () => {
+
+        if (!confirm(`Delete product "${p.name}"?`)) return;
+
+        try {
+
+          const delRes = await fetch(API + `/products/${p._id}`, {
+            method: 'DELETE'
+          });
+
+          if (!delRes.ok) throw new Error();
+
+          alert('Product deleted');
+
+          renderList();
+          updateCategoryDropdown();
+
+        } catch (err) {
+
+          alert('Failed to delete product');
+
+          console.error(err);
+        }
+      };
+
+      list.appendChild(li);
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    list.innerHTML = `
+      <li class="list-group-item text-danger">
+        Failed to load products.
+      </li>
+    `;
+
+  } finally {
+
+    isRendering = false;
+  }
+}
 
   // ─── Fill form for editing ─────────────────────────────────────────────────
   function fillForm(p) {
