@@ -110,7 +110,283 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
+
+<script>
+  const API = "https://opelectronicshop.onrender.com";
+  let editIdx = null;
+  let editingProductId = null;
+
+  // ─── Render product list ───────────────────────────────────────────────────
+  async function renderList() {
+    const list = document.getElementById('productList');
+    list.innerHTML = '<li class="text-muted p-2">Loading...</li>';
+
+    try {
+      const res = await fetch(API + '/products');
+      if (!res.ok) throw new Error("Failed to fetch products");
+
+      const products = await res.json();
+      list.innerHTML = '';
+
+      if (!products.length) {
+        list.innerHTML = '<li class="list-group-item text-muted">No products found</li>';
+        return;
+      }
+
+      products.forEach((p) => {
+        const img = p.images ? p.images[p.primary || 0] : '';
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+        const priceText = p.price && p.showPrice
+          ? ` <span class="text-muted">(₹${p.price})</span>` : '';
+
+        li.innerHTML = `
+          <div>
+            <img src="${img}" style="height:35px;width:35px;object-fit:cover;margin-right:8px;border-radius:4px;">
+            <strong>${p.name}</strong>${priceText}
+            <br><small class="text-secondary">${p.category}</small>
+          </div>
+          <div>
+            <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
+            <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
+          </div>`;
+
+        li.querySelector('.editBtn').onclick = () => fillForm(p);
+        li.querySelector('.delBtn').onclick = async () => {
+          if (!confirm(`Delete product "${p.name}"?`)) return;
+          try {
+            const delRes = await fetch(API + `/products/${p._id}`, { method: 'DELETE' });
+            if (!delRes.ok) throw new Error();
+            alert('Product deleted');
+            renderList();
+            updateCategoryDropdown();
+          } catch (err) {
+            alert('Failed to delete product');
+            console.error(err);
+          }
+        };
+
+        list.appendChild(li);
+      });
+
+    } catch (err) {
+      console.error('Failed to fetch product list:', err);
+      list.innerHTML = '<li class="list-group-item text-danger">Failed to load products. Try refreshing.</li>';
+    }
+  }
+
+  // ─── Fill form for editing ─────────────────────────────────────────────────
+  function fillForm(p) {
+    document.getElementById('prodName').value = p.name || '';
+    document.getElementById('prodPrice').value = p.price || '';
+    document.getElementById('prodFeatures').value = p.features || '';
+    document.getElementById('prodPrimary').value = p.primary || 0;
+    document.getElementById('showPriceChk').checked = !!p.showPrice;
+
+    for (let k = 1; k <= 5; k++) {
+      document.getElementById('prodImg' + k).value = (p.images && p.images[k - 1]) || '';
+    }
+
+    const catSelect = document.getElementById('prodCatSelect');
+    if ([...catSelect.options].some(opt => opt.value === p.category)) {
+      catSelect.value = p.category;
+    } else {
+      const opt = document.createElement('option');
+      opt.value = p.category;
+      opt.textContent = p.category;
+      catSelect.appendChild(opt);
+      catSelect.value = p.category;
+    }
+
+    document.getElementById('prodCatNew').value = '';
+    catSelect.style.display = 'block';
+    editingProductId = p._id;
+
+    // Scroll to top of form smoothly
+    document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ─── Update category dropdown ──────────────────────────────────────────────
+  async function updateCategoryDropdown() {
+    const sel = document.getElementById('prodCatSelect');
+    try {
+      const res = await fetch(API + '/products');
+      if (!res.ok) throw new Error();
+      const products = await res.json();
+      const usedCats = [...new Set(products.map(p => p.category).filter(Boolean))];
+
+      sel.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.textContent = '-- Select a category --';
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      sel.appendChild(placeholder);
+
+      usedCats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        sel.appendChild(opt);
+      });
+    } catch (err) {
+      console.error('Failed to fetch categories', err);
+    }
+  }
+
+  // ─── Reset form ────────────────────────────────────────────────────────────
+  function resetForm() {
+    document.querySelectorAll('#formSection input[type="text"], #formSection input[type="number"], #formSection input[type="url"], #formSection textarea').forEach(el => el.value = '');
+    document.getElementById('prodPrimary').value = 0;
+    document.getElementById('showPriceChk').checked = false;
+    document.getElementById('prodBest').checked = false;
+    editingProductId = null;
+    editIdx = null;
+  }
+
+  // ─── Preview uploaded image ────────────────────────────────────────────────
+  function previewAndEncode(input, targetId) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.getElementById(targetId).value = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ─── Main DOMContentLoaded ─────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    const adminLoginBtn = document.getElementById('adminLoginBtn');
+    const adminEmail    = document.getElementById('adminEmail');
+    const adminPassword = document.getElementById('adminPassword');
+    const loginSection  = document.getElementById('loginSection');
+    const formSection   = document.getElementById('formSection');
+    const addProdBtn    = document.getElementById('addProdBtn');
+
+    const correctEmailHash = '75ae7fc7bf509064fec30e237118984dbee108dc5509c48e8b6dc1d97d704876';
+    const correctPassHash  = 'daf6a69eeecc349286ed88c0e0a55dbf76826ea5728fe37a6bd0bfa89732f60c';
+
+    // ── Admin Login ──────────────────────────────────────────────────────────
+    adminLoginBtn.onclick = () => {
+      const emailInput = adminEmail.value.trim();
+      const passInput  = adminPassword.value.trim();
+
+      Promise.all([
+        crypto.subtle.digest('SHA-256', new TextEncoder().encode(emailInput)),
+        crypto.subtle.digest('SHA-256', new TextEncoder().encode(passInput))
+      ]).then(([emailBuf, passBuf]) => {
+        const toHex = buf =>
+          Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+        if (toHex(emailBuf) === correctEmailHash && toHex(passBuf) === correctPassHash) {
+          localStorage.setItem('ope_admin_logged_in', 'true');
+          loginSection.classList.add('d-none');
+          formSection.classList.remove('d-none');
+          renderList();
+          updateCategoryDropdown();
+        } else {
+          alert('Invalid email or password');
+        }
+      });
+    };
+
+    // ── Auto-login if session exists ─────────────────────────────────────────
+    if (localStorage.getItem('ope_admin_logged_in') === 'true') {
+      loginSection.classList.add('d-none');
+      formSection.classList.remove('d-none');
+      renderList();
+      updateCategoryDropdown();
+    }
+
+    // ── Save / Update product ────────────────────────────────────────────────
+    addProdBtn.onclick = async () => {
+      const imgs = [];
+      const seen = new Set();
+
+      for (let k = 1; k <= 5; k++) {
+        const val = document.getElementById('prodImg' + k).value.trim();
+        if (val && !seen.has(val)) {
+          imgs.push(val);
+          seen.add(val);
+        }
+      }
+
+      if (!imgs.length) return alert('At least one image is required');
+
+      const category = document.getElementById('prodCatNew').value.trim()
+                    || document.getElementById('prodCatSelect').value.trim();
+      const name = document.getElementById('prodName').value.trim();
+
+      if (!name || !category || category === '-- Select a category --') {
+        return alert('Name and category are required');
+      }
+
+      const item = {
+        name,
+        price:     document.getElementById('prodPrice').value.trim() || '',
+        showPrice: document.getElementById('showPriceChk').checked,
+        category,
+        features:  document.getElementById('prodFeatures').value.trim(),
+        images:    imgs,
+        primary:   parseInt(document.getElementById('prodPrimary').value) || 0
+      };
+
+      // Disable button to prevent double submit
+      addProdBtn.disabled = true;
+      addProdBtn.textContent = 'Saving...';
+
+      try {
+        let res;
+        if (editingProductId) {
+          res = await fetch(API + `/products/${editingProductId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(item)
+          });
+        } else {
+          res = await fetch(API + '/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(item)
+          });
+        }
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(text);
+          throw new Error();
+        }
+
+        alert(editingProductId ? 'Product updated!' : 'Product saved!');
+        editingProductId = null;
+        resetForm();
+        renderList();
+        updateCategoryDropdown();
+
+      } catch (err) {
+        alert('Failed to save product. Please try again.');
+        console.error(err);
+      } finally {
+        // Re-enable button whether success or failure
+        addProdBtn.disabled = false;
+        addProdBtn.textContent = 'Save Product';
+      }
+    };
+
+  }); // ← end DOMContentLoaded
+</script>
+
+ 
+</body>
+</html> 
+
+
+
+
+
+<!-- script to be updated      -->
+<!-- <script>
    const API = "https://opelectronicshop.onrender.com";
 
     // const LS_PRODUCTS = 'ope_products';
@@ -391,16 +667,7 @@ function resetForm() {
       };
       reader.readAsDataURL(file);
     }
-  </script>
-</body>
-</html> 
-
-
-
-
-
-
-
+  </script> -->
 
 
 
