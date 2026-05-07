@@ -117,19 +117,17 @@
   let currentFetch = null; // ✅ Tracks the current fetch so we can cancel duplicates
 
   // ─── Render product list ───────────────────────────────────────────────────
-  let isRendering = false;
+  
+
+
+let renderToken = 0;
 
 async function renderList() {
 
-  // Prevent duplicate rendering
-  if (isRendering) return;
-  isRendering = true;
+  const currentToken = ++renderToken;
 
   const list = document.getElementById('productList');
-  if (!list) {
-    isRendering = false;
-    return;
-  }
+  if (!list) return;
 
   list.innerHTML = `
     <li class="list-group-item text-muted p-2">
@@ -138,6 +136,7 @@ async function renderList() {
   `;
 
   try {
+
     const res = await fetch(API + '/products');
 
     if (!res.ok) {
@@ -146,99 +145,66 @@ async function renderList() {
 
     const products = await res.json();
 
-    // Clear old items BEFORE rendering
-    list.innerHTML = '';
+    // STOP old renders
+    if (currentToken !== renderToken) return;
 
-    // Prevent accidental duplicate IDs
-    const renderedIds = new Set();
+    // Remove duplicates safely
+    const uniqueProducts = [];
+    const ids = new Set();
 
-    if (!products.length) {
-      list.innerHTML = `
-        <li class="list-group-item text-muted">
-          No products found
-        </li>
-      `;
-      return;
-    }
+    products.forEach(p => {
+      if (!ids.has(p._id)) {
+        ids.add(p._id);
+        uniqueProducts.push(p);
+      }
+    });
 
-    products.forEach((p) => {
+    // Build FULL HTML first
+    let html = '';
 
-      // Skip duplicate products
-      if (renderedIds.has(p._id)) return;
-      renderedIds.add(p._id);
+    uniqueProducts.forEach(p => {
 
       const img = p.images?.[p.primary || 0] || '';
-
-      const li = document.createElement('li');
-
-      li.className =
-        'list-group-item d-flex justify-content-between align-items-center';
 
       const priceText =
         p.price && p.showPrice
           ? `<span class="text-muted">(₹${p.price})</span>`
           : '';
 
-      li.innerHTML = `
-        <div>
-          <img src="${img}"
-               style="height:35px;width:35px;object-fit:cover;margin-right:8px;border-radius:4px;">
+      html += `
+        <li class="list-group-item d-flex justify-content-between align-items-center">
 
-          <strong>${p.name}</strong>
-          ${priceText}
+          <div>
+            <img src="${img}"
+                 style="height:35px;width:35px;object-fit:cover;margin-right:8px;border-radius:4px;">
 
-          <br>
+            <strong>${p.name}</strong>
+            ${priceText}
 
-          <small class="text-secondary">
-            ${p.category}
-          </small>
-        </div>
+            <br>
 
-        <div>
-          <button class='btn btn-sm btn-outline-primary me-1 editBtn'>
-            Edit
-          </button>
+            <small class="text-secondary">
+              ${p.category}
+            </small>
+          </div>
 
-          <button class='btn btn-sm btn-outline-danger delBtn'>
-            Delete
-          </button>
-        </div>
+          <div>
+            <button class="btn btn-sm btn-outline-primary me-1"
+                    onclick='fillForm(${JSON.stringify(p)})'>
+              Edit
+            </button>
+
+            <button class="btn btn-sm btn-outline-danger"
+                    onclick='deleteProduct("${p._id}")'>
+              Delete
+            </button>
+          </div>
+
+        </li>
       `;
-
-      li.querySelector('.editBtn').onclick = () => fillForm(p);
-
-      li.querySelector('.delBtn').onclick = async () => {
-
-        if (!confirm(`Delete product "${p.name}"?`)) return;
-
-        try {
-
-          const delRes = await fetch(API + `/products/${p._id}`, {
-            method: 'DELETE'
-          });
-
-          if (!delRes.ok) throw new Error();
-
-          alert('Product deleted');
-
-          renderList();
-
-fetch(API + '/products')
-  .then(res => res.json())
-  .then(products => {
-    updateCategoryDropdown(products);
-  });
-
-        } catch (err) {
-
-          alert('Failed to delete product');
-
-          console.error(err);
-        }
-      };
-
-      list.appendChild(li);
     });
+
+    list.innerHTML = html;
 
   } catch (err) {
 
@@ -249,10 +215,31 @@ fetch(API + '/products')
         Failed to load products.
       </li>
     `;
+  }
+}
 
-  } finally {
+  
+async function deleteProduct(id) {
 
-    isRendering = false;
+  if (!confirm('Delete this product?')) return;
+
+  try {
+
+    const res = await fetch(API + `/products/${id}`, {
+      method: 'DELETE'
+    });
+
+    if (!res.ok) throw new Error();
+
+    alert('Product deleted');
+
+    renderList();
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert('Failed to delete product');
   }
 }
 
