@@ -280,32 +280,47 @@ async function renderList() {
   }
 
   // ─── Update category dropdown ──────────────────────────────────────────────
-  async function updateCategoryDropdown() {
-    const sel = document.getElementById('prodCatSelect');
-    if (!sel) return;
-    try {
-      const res = await fetch(API + '/products');
-      if (!res.ok) throw new Error();
-      const products = await res.json();
-      const usedCats = [...new Set(products.map(p => p.category).filter(Boolean))];
+  async function updateCategoryDropdown(products = []) {
 
-      sel.innerHTML = '';
-      const placeholder = document.createElement('option');
-      placeholder.textContent = '-- Select a category --';
-      placeholder.disabled = true;
-      placeholder.selected = true;
-      sel.appendChild(placeholder);
+  const sel = document.getElementById('prodCatSelect');
 
-      usedCats.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        sel.appendChild(opt);
-      });
-    } catch (err) {
-      console.error('Failed to fetch categories', err);
-    }
+  if (!sel) return;
+
+  // Use existing products if provided
+  let allProducts = products;
+
+  // Only fetch if products not passed
+  if (!allProducts.length) {
+
+    const res = await fetch(API + '/products');
+
+    if (!res.ok) return;
+
+    allProducts = await res.json();
   }
+
+  const usedCats = [
+    ...new Set(
+      allProducts.map(p => p.category).filter(Boolean)
+    )
+  ];
+
+  sel.innerHTML = `
+    <option disabled selected>
+      -- Select a category --
+    </option>
+  `;
+
+  usedCats.forEach(cat => {
+
+    const opt = document.createElement('option');
+
+    opt.value = cat;
+    opt.textContent = cat;
+
+    sel.appendChild(opt);
+  });
+}
 
   // ─── Reset form ────────────────────────────────────────────────────────────
   function resetForm() {
@@ -343,7 +358,11 @@ async function renderList() {
       loginSection.classList.add('d-none');
       formSection.classList.remove('d-none');
       renderList();
-      updateCategoryDropdown();
+       fetch(API + '/products')
+      .then(res => res.json())
+      .then(products => {
+      updateCategoryDropdown(products);
+    });
     }
 
     // ── Admin Login button ───────────────────────────────────────────────────
@@ -363,7 +382,11 @@ async function renderList() {
           loginSection.classList.add('d-none');
           formSection.classList.remove('d-none');
           renderList();
-          updateCategoryDropdown();
+          fetch(API + '/products')
+            .then(res => res.json())
+             .then(products => {
+             updateCategoryDropdown(products);
+             });
         } else {
           alert('Invalid email or password');
         }
@@ -423,8 +446,11 @@ async function renderList() {
         alert(editingProductId ? 'Product updated!' : 'Product saved!');
         editingProductId = null;
         resetForm();
+        const res2 = await fetch(API + '/products');
+        const updatedProducts = await res2.json();
+
         await renderList();
-        await updateCategoryDropdown();
+        updateCategoryDropdown(updatedProducts);
 
       } catch (err) {
         alert('Failed to save product. Please try again.');
