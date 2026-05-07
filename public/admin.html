@@ -116,7 +116,7 @@
     // const LS_PRODUCTS = 'ope_products';
     // const getLS = k => JSON.parse(localStorage.getItem(k) || '[]');
     // const setLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
-    // let editIdx = null;
+     let editIdx = null;
     let editingProductId = null;
 
 
@@ -191,95 +191,6 @@
 
 
 
-//     async function renderList() {
-//   const list = document.getElementById('productList');
-//   list.innerHTML = '';
-
-//   try {
-//     const res = await fetch('/products');
-//     const products = await res.json();
-
-//     products.forEach((p, i) => {
-//       const img = p.images ? p.images[p.primary || 0] : p.image;
-//       const li = document.createElement('li');
-//       li.className = 'list-group-item d-flex justify-content-between align-items-start';
-
-//       const priceText = p.price ? ` <span class="text-muted">(₹${p.price})</span>` : '';
-
-//       li.innerHTML = `
-//         <div>
-//           <img src="${img}" style="height:30px;width:30px;object-fit:cover;margin-right:8px;">
-//           <strong>${p.name}</strong>${priceText}
-//           <br><small>${p.category}</small>
-//         </div>
-//         <div>
-//           <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
-//           <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
-//         </div>`;
-
-//       li.querySelector('.editBtn').onclick = () => fillForm(p, i);
-//       li.querySelector('.delBtn').onclick = async () => {
-//   if (!confirm(`Delete product "${p.name}"?`)) return;
-
-//   try {
-//     const res = await fetch(API +`/products/${p._id}`, {
-//       method: 'DELETE'
-//     });
-//     if (res.ok) {
-//       alert('Product deleted');
-//       renderList();
-//     } else {
-//       alert('Failed to delete product');
-//     }
-//   } catch (err) {
-//     console.error('Delete error:', err);
-//     alert('Error deleting product');
-//   }
-// };
-
-//       list.appendChild(li);
-//     });
-//   } catch (err) {
-//     console.error('Failed to fetch product list:', err);
-//     list.innerHTML = '<li class="text-danger">Failed to load products</li>';
-//   }
-// }
-
-
-//     function renderList() {         // local storage
-//   const list = document.getElementById('productList');
-//   list.innerHTML = '';
-//   getLS(LS_PRODUCTS).forEach((p, i) => {
-//     const img = p.images ? p.images[p.primary || 0] : p.image;
-//     const li = document.createElement('li');
-//     li.className = 'list-group-item d-flex justify-content-between align-items-start';
-
-//     const priceText = p.price ? ` <span class="text-muted">(₹${p.price})</span>` : '';
-
-//     li.innerHTML = `
-//       <div>
-//         <img src="${img}" style="height:30px;width:30px;object-fit:cover;margin-right:8px;">
-//         <strong>${p.name}</strong>${priceText}
-//         <br><small>${p.category}</small>
-//       </div>
-//       <div>
-//         <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
-//         <button class='btn btn-sm btn-outline-danger delBtn'>Del</button>
-//       </div>`;
-
-//     li.querySelector('.editBtn').onclick = () => fillForm(p, i);
-//     li.querySelector('.delBtn').onclick = () => {
-//       const arr = getLS(LS_PRODUCTS); // local storage
-//       arr.splice(i, 1);
-//       setLS(LS_PRODUCTS, arr);
-
-//       renderList();
-//     };
-//     list.appendChild(li);
-//   });
-// }
-
-
 
     function fillForm(p, i) {
   prodName.value = p.name || '';
@@ -345,53 +256,6 @@ async function updateCategoryDropdown() {
 }
 
 
-// async function updateCategoryDropdown() {
-//   const sel = document.getElementById('prodCatSelect');
-//   try {
-//     const res = await fetch('/products');
-//     const products = await res.json();
-//     const usedCats = [...new Set(products.map(p => p.category).filter(Boolean))];
-
-//     sel.innerHTML = '';
-//     const placeholder = document.createElement('option');
-//     placeholder.textContent = '-- Select a category --';
-//     placeholder.disabled = true;
-//     placeholder.selected = true;
-//     sel.appendChild(placeholder);
-
-//     usedCats.forEach(cat => {
-//       const opt = document.createElement('option');
-//       opt.value = cat;
-//       opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
-//       sel.appendChild(opt);
-//     });
-//   } catch (err) {
-//     console.error('Failed to fetch categories', err);
-//   }
-// }
-
-
-//     function updateCategoryDropdown() {   // local storage
-//   const sel = document.getElementById('prodCatSelect');
-//   const usedCats = [...new Set(getLS('ope_products').map(p => p.category).filter(Boolean))];
-
-//   sel.innerHTML = '';
-
-//   // Add the placeholder option
-//   const placeholder = document.createElement('option');
-//   placeholder.textContent = '-- Select a category --';
-//   placeholder.disabled = true;
-//   placeholder.selected = true;
-//   sel.appendChild(placeholder);
-
-//   usedCats.forEach(cat => {
-//     const opt = document.createElement('option');
-//     opt.value = cat;
-//     opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
-//     sel.appendChild(opt);
-//   });
-// }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const adminLoginBtn = document.getElementById('adminLoginBtn');
@@ -440,17 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
- 
-
-    // adminLoginBtn.onclick = () => {
-    //   if (adminEmail.value === 'admin@op.com' && adminPassword.value === 'admin123') {
-    //      localStorage.setItem('ope_admin_logged_in', 'true');
-    //     loginSection.classList.add('d-none');
-    //     formSection.classList.remove('d-none');
-    //     renderList();
-    //      updateCategoryDropdown();
-    //   } else alert('Invalid credentials');
-    // };
 
 
 addProdBtn.onclick = async () => {
@@ -518,74 +371,6 @@ addProdBtn.onclick = async () => {
 };
 
 
-   
-// addProdBtn.onclick = async () => {
-//   const imgs = [];
-//   const seen = new Set();
-//   for (let k = 1; k <= 5; k++) {
-//     const val = document.getElementById('prodImg' + k).value.trim();
-//     if (val && !seen.has(val)) {
-//       imgs.push(val);
-//       seen.add(val);
-//     }
-//   }
-//   if (!imgs.length) return alert('At least one image is required');
-
-//   const category = prodCatNew.value.trim() || prodCatSelect.value.trim();
-//   if (!prodName.value.trim() || !category) {
-//     return alert('Name and category are required');
-//   }
-
-//   const item = {
-//     name: prodName.value.trim(),
-//     price: prodPrice.value.trim() || '',
-//     showPrice: document.getElementById('showPriceChk').checked,
-//     category,
-//     features: prodFeatures.value.trim(),
-//     images: imgs,
-//     primary: parseInt(prodPrimary.value) || 0
-//   };
-
-//   try {
-//     let res;
-//     if (editingProductId) {
-//       // 🟡 Edit existing product
-//       res = await fetch(`/products/${editingProductId}`, {
-//         method: 'PUT',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify(item)
-//       });
-//     } else {
-//       // 🟢 Add new product
-//       res = await fetch('/products', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify(item)
-//       });
-//     }
-
-//     // const data = await res.json();
-//     // if (!res.ok) throw new Error(data.message || 'Error saving product');
-
-//     if (!res.ok) {
-//   const text = await res.text(); // fallback to raw text
-//   console.error('Server response:', text);
-//   throw new Error('Error saving product');
-// }
-// const data = await res.json();
-
-
-//     alert(data.message || 'Saved successfully');
-//     editingProductId = null;
-//     resetForm(); // ✅ Clear the form
-//     renderList();
-//     updateCategoryDropdown();
-//   } catch (err) {
-//     alert('Failed to save product');
-//     console.error(err);
-//   }
-// };
-
 function resetForm() {
   document.querySelectorAll('#formSection input, #formSection textarea').forEach(el => el.value = '');
   prodPrimary.value = 0;
@@ -595,55 +380,6 @@ function resetForm() {
 
     
 
-
-//   addProdBtn.onclick = () => {      // local storage
-//   const imgs = [];
-//   for (let k = 1; k <= 5; k++) {
-//     const val = document.getElementById('prodImg' + k).value.trim();
-//     if (val) imgs.push(val);
-//   }
-//   if (!imgs.length) return alert('At least one image is required');
-
-//   const category = prodCatNew.value.trim() || prodCatSelect.value.trim();
-//   const item = {
-//     id: Date.now(),
-//     name: prodName.value.trim(),
-//     price: prodPrice.value.trim() || '',
-//     showPrice: document.getElementById('showPriceChk').checked,
-//     category,
-//     features: prodFeatures.value.trim(),
-//     images: imgs,
-//     primary: parseInt(prodPrimary.value) || 0
-//   };
-
-//   if (!item.name || !item.category) return alert('Name and category are required');
-
-//   const arr = getLS(LS_PRODUCTS);
-//   if (editIdx !== null) {
-//     arr[editIdx] = item;
-//     editIdx = null;
-//   } else {
-//     arr.push(item);
-//   }
-
-//   setLS(LS_PRODUCTS, arr);
-//   renderList();
-//   updateCategoryDropdown();
-//   document.querySelectorAll('#formSection input, #formSection textarea').forEach(el => el.value = '');
-//   prodPrimary.value = 0;
-
-//   // 🔄 Optional full refresh:
-//    setTimeout(() => location.reload(), 300);
-// };
-
-window.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('ope_admin_logged_in') === 'true') {
-        loginSection.classList.add('d-none');
-        formSection.classList.remove('d-none');
-        renderList();
-        updateCategoryDropdown();
-      }
-    });
 
 
     function previewAndEncode(input, targetId) {
