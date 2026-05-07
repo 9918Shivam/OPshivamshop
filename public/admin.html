@@ -302,8 +302,11 @@ async function renderList() {
     if (localStorage.getItem('ope_admin_logged_in') === 'true') {
       loginSection.classList.add('d-none');
       formSection.classList.remove('d-none');
-      renderList();
-      updateCategoryDropdown();
+     // ✅ Small delay ensures DOM is fully ready before rendering
+  setTimeout(() => {
+    renderList();
+    updateCategoryDropdown();
+  }, 50);
     }
 
     // ── Save / Update product ────────────────────────────────────────────────
