@@ -113,11 +113,11 @@
 
 <script>
 
- window.scriptRunCount = (window.scriptRunCount || 0) + 1;
+// window.scriptRunCount = (window.scriptRunCount || 0) + 1;
 
-console.log("JS RUN COUNT =", window.scriptRunCount);
+//console.log("JS RUN COUNT =", window.scriptRunCount);
  
- console.log("SCRIPT LOADED");
+// console.log("SCRIPT LOADED");
   const API = "https://opelectronicshop.onrender.com";
   let editingProductId = null;
   let currentFetch = null; // ✅ Tracks the current fetch so we can cancel duplicates
@@ -173,7 +173,7 @@ async function renderList() {
       const img = p.images?.[p.primary || 0] || '';
 
       const priceText =
-        p.price && p.showPrice
+        p.price 
           ? `<span class="text-muted">(₹${p.price})</span>`
           : '';
 
@@ -240,7 +240,7 @@ async function deleteProduct(id) {
     alert('Product deleted');
 
     renderList();
-   console.log("SCRIPT deleted LOADED");
+   //console.log("SCRIPT deleted LOADED");
 
   } catch (err) {
 
@@ -361,7 +361,7 @@ async function deleteProduct(id) {
       .then(res => res.json())
       .then(products => {
       updateCategoryDropdown(products);
-       console.log("DOMContentLoaded LOADED");
+      // console.log("DOMContentLoaded LOADED");
     });
     }
 
@@ -386,7 +386,7 @@ async function deleteProduct(id) {
             .then(res => res.json())
              .then(products => {
              updateCategoryDropdown(products);
-              console.log("SCRIPT adminloginbtn LOADED");
+           //   console.log("SCRIPT adminloginbtn LOADED");
              });
         } else {
           alert('Invalid email or password');
@@ -452,7 +452,7 @@ async function deleteProduct(id) {
 
         await renderList();
         updateCategoryDropdown(updatedProducts);
-       console.log("SCRIPT addprodbtn LOADED");
+       //console.log("SCRIPT addprodbtn LOADED");
 
       } catch (err) {
         alert('Failed to save product. Please try again.');
