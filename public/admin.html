@@ -222,7 +222,12 @@ async function renderList() {
           alert('Product deleted');
 
           renderList();
-          updateCategoryDropdown();
+
+fetch(API + '/products')
+  .then(res => res.json())
+  .then(products => {
+    updateCategoryDropdown(products);
+  });
 
         } catch (err) {
 
