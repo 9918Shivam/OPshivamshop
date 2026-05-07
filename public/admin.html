@@ -112,6 +112,11 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+
+ window.scriptRunCount = (window.scriptRunCount || 0) + 1;
+
+console.log("JS RUN COUNT =", window.scriptRunCount);
+ 
  console.log("SCRIPT LOADED");
   const API = "https://opelectronicshop.onrender.com";
   let editingProductId = null;
