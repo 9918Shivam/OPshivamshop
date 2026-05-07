@@ -114,20 +114,28 @@
 <script>
   const API = "https://opelectronicshop.onrender.com";
   let editingProductId = null;
-  let renderListCalled = false; // ✅ Ensures renderList only fires ONCE on page load
+  let currentFetch = null; // ✅ Tracks the current fetch so we can cancel duplicates
 
   // ─── Render product list ───────────────────────────────────────────────────
   async function renderList() {
+    // ✅ Cancel any previous fetch that hasn't finished yet
+    if (currentFetch) {
+      currentFetch.abort();
+    }
+    currentFetch = new AbortController();
+
     const list = document.getElementById('productList');
     if (!list) return;
     list.innerHTML = '<li class="list-group-item text-muted p-2">Loading...</li>';
 
     try {
-      const res = await fetch(API + '/products');
+      const res = await fetch(API + '/products', { signal: currentFetch.signal });
       if (!res.ok) throw new Error("Failed to fetch products");
 
       const products = await res.json();
-      list.innerHTML = ''; // ✅ Always wipe before appending
+      
+      // ✅ Wipe list completely before rendering
+      list.innerHTML = '';
 
       if (!products.length) {
         list.innerHTML = '<li class="list-group-item text-muted">No products found</li>';
@@ -172,8 +180,12 @@
       });
 
     } catch (err) {
+      // Ignore aborted fetch — it's intentional
+      if (err.name === 'AbortError') return;
       console.error('Failed to fetch product list:', err);
       list.innerHTML = '<li class="list-group-item text-danger">Failed to load products. Try refreshing.</li>';
+    } finally {
+      currentFetch = null;
     }
   }
 
@@ -251,19 +263,6 @@
     reader.readAsDataURL(file);
   }
 
-  // ─── Helper: show the admin panel ─────────────────────────────────────────
-  function showAdminPanel(loginSection, formSection) {
-    loginSection.classList.add('d-none');
-    formSection.classList.remove('d-none');
-
-    // ✅ Only call renderList ONCE using the flag
-    if (!renderListCalled) {
-      renderListCalled = true;
-      renderList();
-      updateCategoryDropdown();
-    }
-  }
-
   // ─── Main DOMContentLoaded ─────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
     const adminLoginBtn = document.getElementById('adminLoginBtn');
@@ -277,8 +276,12 @@
     const correctPassHash  = 'daf6a69eeecc349286ed88c0e0a55dbf76826ea5728fe37a6bd0bfa89732f60c';
 
     // ── Auto-login if session exists ─────────────────────────────────────────
+    // ✅ Only ONE place that calls renderList on page load
     if (localStorage.getItem('ope_admin_logged_in') === 'true') {
-      showAdminPanel(loginSection, formSection); // ← uses flag, only fires once
+      loginSection.classList.add('d-none');
+      formSection.classList.remove('d-none');
+      renderList();
+      updateCategoryDropdown();
     }
 
     // ── Admin Login button ───────────────────────────────────────────────────
@@ -295,7 +298,10 @@
 
         if (toHex(emailBuf) === correctEmailHash && toHex(passBuf) === correctPassHash) {
           localStorage.setItem('ope_admin_logged_in', 'true');
-          showAdminPanel(loginSection, formSection); // ← same function, flag prevents double
+          loginSection.classList.add('d-none');
+          formSection.classList.remove('d-none');
+          renderList();
+          updateCategoryDropdown();
         } else {
           alert('Invalid email or password');
         }
@@ -355,7 +361,7 @@
         alert(editingProductId ? 'Product updated!' : 'Product saved!');
         editingProductId = null;
         resetForm();
-        await renderList();           // ✅ await so it completes fully before anything else
+        await renderList();
         await updateCategoryDropdown();
 
       } catch (err) {
