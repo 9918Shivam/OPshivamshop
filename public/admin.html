@@ -112,6 +112,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+ console.log("SCRIPT LOADED");
   const API = "https://opelectronicshop.onrender.com";
   let editingProductId = null;
   let currentFetch = null; // ✅ Tracks the current fetch so we can cancel duplicates
@@ -234,6 +235,7 @@ async function deleteProduct(id) {
     alert('Product deleted');
 
     renderList();
+   console.log("SCRIPT deleted LOADED");
 
   } catch (err) {
 
@@ -354,6 +356,7 @@ async function deleteProduct(id) {
       .then(res => res.json())
       .then(products => {
       updateCategoryDropdown(products);
+       console.log("DOMContentLoaded LOADED");
     });
     }
 
@@ -378,6 +381,7 @@ async function deleteProduct(id) {
             .then(res => res.json())
              .then(products => {
              updateCategoryDropdown(products);
+              console.log("SCRIPT adminloginbtn LOADED");
              });
         } else {
           alert('Invalid email or password');
@@ -443,6 +447,7 @@ async function deleteProduct(id) {
 
         await renderList();
         updateCategoryDropdown(updatedProducts);
+       console.log("SCRIPT addprodbtn LOADED");
 
       } catch (err) {
         alert('Failed to save product. Please try again.');
