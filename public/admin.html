@@ -117,64 +117,71 @@
   let editingProductId = null;
 
   // ─── Render product list ───────────────────────────────────────────────────
-  async function renderList() {
-    const list = document.getElementById('productList');
-    list.innerHTML = '<li class="text-muted p-2">Loading...</li>';
+let isRendering = false; // 🔒 Guard to prevent double render
 
-    try {
-      const res = await fetch(API + '/products');
-      if (!res.ok) throw new Error("Failed to fetch products");
+async function renderList() {
+  if (isRendering) return; // 🛑 Stop if already running
+  isRendering = true;
 
-      const products = await res.json();
-      list.innerHTML = '';
+  const list = document.getElementById('productList');
+  list.innerHTML = '<li class="text-muted p-2">Loading...</li>';
 
-      if (!products.length) {
-        list.innerHTML = '<li class="list-group-item text-muted">No products found</li>';
-        return;
-      }
+  try {
+    const res = await fetch(API + '/products');
+    if (!res.ok) throw new Error("Failed to fetch products");
 
-      products.forEach((p) => {
-        const img = p.images ? p.images[p.primary || 0] : '';
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    const products = await res.json();
+    list.innerHTML = ''; // ✅ Clear before rendering
 
-        const priceText = p.price && p.showPrice
-          ? ` <span class="text-muted">(₹${p.price})</span>` : '';
-
-        li.innerHTML = `
-          <div>
-            <img src="${img}" style="height:35px;width:35px;object-fit:cover;margin-right:8px;border-radius:4px;">
-            <strong>${p.name}</strong>${priceText}
-            <br><small class="text-secondary">${p.category}</small>
-          </div>
-          <div>
-            <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
-            <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
-          </div>`;
-
-        li.querySelector('.editBtn').onclick = () => fillForm(p);
-        li.querySelector('.delBtn').onclick = async () => {
-          if (!confirm(`Delete product "${p.name}"?`)) return;
-          try {
-            const delRes = await fetch(API + `/products/${p._id}`, { method: 'DELETE' });
-            if (!delRes.ok) throw new Error();
-            alert('Product deleted');
-            renderList();
-            updateCategoryDropdown();
-          } catch (err) {
-            alert('Failed to delete product');
-            console.error(err);
-          }
-        };
-
-        list.appendChild(li);
-      });
-
-    } catch (err) {
-      console.error('Failed to fetch product list:', err);
-      list.innerHTML = '<li class="list-group-item text-danger">Failed to load products. Try refreshing.</li>';
+    if (!products.length) {
+      list.innerHTML = '<li class="list-group-item text-muted">No products found</li>';
+      return;
     }
+
+    products.forEach((p) => {
+      const img = p.images ? p.images[p.primary || 0] : '';
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+      const priceText = p.price && p.showPrice
+        ? ` <span class="text-muted">(₹${p.price})</span>` : '';
+
+      li.innerHTML = `
+        <div>
+          <img src="${img}" style="height:35px;width:35px;object-fit:cover;margin-right:8px;border-radius:4px;">
+          <strong>${p.name}</strong>${priceText}
+          <br><small class="text-secondary">${p.category}</small>
+        </div>
+        <div>
+          <button class='btn btn-sm btn-outline-primary me-1 editBtn'>Edit</button>
+          <button class='btn btn-sm btn-outline-danger delBtn'>Delete</button>
+        </div>`;
+
+      li.querySelector('.editBtn').onclick = () => fillForm(p);
+      li.querySelector('.delBtn').onclick = async () => {
+        if (!confirm(`Delete product "${p.name}"?`)) return;
+        try {
+          const delRes = await fetch(API + `/products/${p._id}`, { method: 'DELETE' });
+          if (!delRes.ok) throw new Error();
+          alert('Product deleted');
+          renderList();
+          updateCategoryDropdown();
+        } catch (err) {
+          alert('Failed to delete product');
+          console.error(err);
+        }
+      };
+
+      list.appendChild(li);
+    });
+
+  } catch (err) {
+    console.error('Failed to fetch product list:', err);
+    list.innerHTML = '<li class="list-group-item text-danger">Failed to load products. Try refreshing.</li>';
+  } finally {
+    isRendering = false; // 🔓 Always unlock when done
   }
+}
 
   // ─── Fill form for editing ─────────────────────────────────────────────────
   function fillForm(p) {
