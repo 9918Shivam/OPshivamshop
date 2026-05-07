@@ -173,7 +173,7 @@ async function renderList() {
       const img = p.images?.[p.primary || 0] || '';
 
       const priceText =
-        p.price 
+       p.price !== undefined && p.price !== null && p.price !== ''
           ? `<span class="text-muted">(₹${p.price})</span>`
           : '';
 
